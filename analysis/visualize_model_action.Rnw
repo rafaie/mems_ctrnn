@@ -1,0 +1,184 @@
+\documentclass{article}
+\usepackage[margin=1.2in]{geometry}
+\begin{document}
+<< set-options, echo=FALSE,  cache=FALSE>>=
+
+@
+\section{Visualize the agent movement for different scenarios}
+
+<<echo=FALSE, message=FALSE, warning=FALSE, fig.width=11, fig.asp=0.6>>=
+library(data.table)
+library(dplyr)
+library(ggplot2)
+library(xtable)
+library(comf)
+library(weathermetrics)
+library(lubridate)
+library(gridExtra)
+
+base_data=read.csv('../output.csv')
+base_data$obj_type_name <- sapply(base_data$obj_type, function(X) if (X==1) 'Line' else 'Circle')
+
+#par(mfrow=c(2,1))
+#data_1 = base_data[base_data$X2 == 30 & base_data$Y2==150
+#                  &  base_data$X1 == 0 & base_data$obj_type == 1, ]
+#a1 <- ggplot(data_1, aes(timer, agent_X)) +
+#         geom_line() + labs(title=paste("Vote/PMV Chart for day ", sep = ' ')) +
+#        theme(legend.position='none')
+
+#data_2 = base_data[base_data$X2 == 30 & base_data$Y2==150 & base_data$step_size == 0.1
+#                  &  base_data$X1 < 0 & base_data$obj_type == 2, ]
+#a2 <- ggplot(data_2, aes(timer, agent_X)) +
+#         geom_line() + labs(title=paste("Vote/PMV Chart for day ", sep = ' '))+
+#        theme(legend.position='none')
+
+#grid.arrange(a1, a2, nrow = 1)
+
+
+
+vars <- unique(base_data[, c(6,7)])
+for (i in c(1:length(vars$X2)) ){
+  opt = vars[i,]
+  
+  data_3 = base_data[base_data$X2 == opt$X2 & base_data$Y2==opt$Y2 & base_data$step_size == 0.1
+                  & base_data$obj_type == 1, ]
+  data_3_1 = melt(data_3[,c(2,4,8,10)], id=c(1,2))
+  p3<-ggplot(data_3_1, aes(timer, value, color=variable)) +
+         geom_line() + labs(title=paste("Agent move for a", 
+                                        data_3$obj_type_name[1], "and obj in pos(X Y)= (", 
+                                        data_3$X2[1],
+                                        data_3$Y2[2], ")",
+                                        sep = ' '))+
+        theme(legend.position="bottom") + facet_grid(X1~.)
+  
+  data_4 = base_data[base_data$X2 == opt$X2 & base_data$Y2==opt$Y2 & base_data$step_size == 0.1
+                  & base_data$obj_type == 2, ]
+  data_4_1 = melt(data_4[,c(2,4,8,10)], id=c(1,2))
+  p4<-ggplot(data_4_1, aes(timer, value, color=variable)) +
+         geom_line() + labs(title=paste("Agent move for a", 
+                                        data_4$obj_type_name[1], "and obj in pos(X Y)= (", 
+                                        data_4$X2[1],
+                                        data_4$Y2[2], ")",
+                                        sep = ' '))+
+        theme(legend.position="bottom") + facet_grid(X1~.)
+  grid.arrange(p3, p4, nrow = 1)
+
+  
+}
+@
+
+\section{Visualize the agent movement for different scenarios - New Suggestion}
+<<echo=FALSE, message=FALSE, warning=FALSE, fig.width=11, fig.asp=0.6>>=
+vars <- unique(base_data[, c(6,7)])
+for (i in c(1:length(vars$X2)) ){
+  #i = 1
+  opt = vars[i,]
+  data_5 = base_data[base_data$X2 == opt$X2 & base_data$Y2==opt$Y2 & base_data$step_size == 0.1
+                  & base_data$obj_type == 1, ]
+  
+  data_5_1 = melt(data_5[,c(2,4,8,10)], id=c(1,2))
+  data_5_1_1 <- merge(data_5_1, data_5[, c(2,4,11)])
+  p5<- ggplot(data_5, aes(timer)) +
+         geom_line(aes(y=agent_X), color='firebrick3') + 
+         geom_line(aes(y=obj_Y*max(data_5$agent_X)/max(data_5$obj_Y)), color='darkolivegreen4') + 
+          labs(title=paste("Agent move for a", 
+                                        data_5$obj_type_name[1], "and obj in pos(X Y)= (", 
+                                        data_5$X2[1],
+                                        data_5$Y2[2], ")",
+                                        sep = ' '))+
+        theme(legend.position="bottom") + ylab('X Position of Agent') + xlab('Time') +
+    scale_y_continuous(sec.axis = sec_axis(~.*max(data_5$obj_Y)/max(data_5$agent_X), 
+                                           name = "Y Position of Object")) + 
+    facet_grid(X1~.)
+  
+  
+  data_6 = base_data[base_data$X2 == opt$X2 & base_data$Y2==opt$Y2 & base_data$step_size == 0.1
+                  & base_data$obj_type == 2, ]
+  
+  data_6_1 = melt(data_6[,c(2,4,8,10)], id=c(1,2))
+  data_6_1_1 <- merge(data_6_1, data_6[, c(2,4,11)])
+  p6<- ggplot(data_6, aes(timer)) +
+         geom_line(aes(y=agent_X), color='firebrick3') + 
+         geom_line(aes(y=obj_Y*max(data_6$agent_X)/max(data_6$obj_Y)), color='darkolivegreen4') + 
+          labs(title=paste("Agent move for a", 
+                                        data_6$obj_type_name[1], "and obj in pos(X Y)= (", 
+                                        data_6$X2[1],
+                                        data_6$Y2[2], ")",
+                                        sep = ' '))+
+        theme(legend.position="bottom") + ylab('X Position of Agent') + xlab('Time') +
+    scale_y_continuous(sec.axis = sec_axis(~.*max(data_6$obj_Y)/max(data_6$agent_X), 
+                                           name = "Y Position of Object")) + 
+    facet_grid(X1~.)
+  
+  grid.arrange(p5, p6, nrow = 1)
+
+}
+@
+
+\section{Visualize the agent movement for different scenarios - New Suggestion2}
+
+<<echo=FALSE, message=FALSE, warning=FALSE, fig.width=11, fig.asp=0.6>>=
+vars <- unique(base_data[, c(6,7)])
+for (i in c(1:length(vars$X2)) ){
+  #i = 1
+  opt = vars[i,]
+  data_5 = base_data[base_data$X2 == opt$X2 & base_data$Y2==opt$Y2 & base_data$step_size == 0.1
+                  & base_data$obj_type == 1, ]
+  
+  data_5_1 = melt(data_5[,c(2,4,8,10)], id=c(1,2))
+  data_5_1_1 <- merge(data_5_1, data_5[, c(2,4,11)])
+  p5<- ggplot(data_5_1_1, aes(timer)) +
+         geom_line(aes(y=value,color=variable )) + 
+         geom_line(aes(y=obj_Y*max(data_5_1_1$value)/max(data_5_1_1$obj_Y)), color='darkolivegreen4') + 
+          labs(title=paste("Agent move for a", 
+                                        data_5$obj_type_name[1], "and obj in pos(X Y)= (", 
+                                        data_5$X2[1],
+                                        data_5$Y2[2], ")",
+                                        sep = ' '))+
+        theme(legend.position="bottom") +
+    scale_y_continuous(sec.axis = sec_axis(~.*max(data_5_1_1$obj_Y)/max(data_5_1_1$value), 
+                                           name = "Y Position of Object")) + 
+    facet_grid(X1~.)
+  
+  
+  data_6 = base_data[base_data$X2 == opt$X2 & base_data$Y2==opt$Y2 & base_data$step_size == 0.1
+                  & base_data$obj_type == 2, ]
+  
+  data_6_1 = melt(data_6[,c(2,4,8,10)], id=c(1,2))
+  data_6_1_1 <- merge(data_6_1, data_6[, c(2,4,11)])
+  p6<- ggplot(data_6_1_1, aes(timer)) +
+         geom_line(aes(y=value,color=variable )) + 
+         geom_line(aes(y=obj_Y*max(data_6_1_1$value)/max(data_6_1_1$obj_Y)), color='darkolivegreen4') + 
+          labs(title=paste("Agent move for a", 
+                                        data_5$obj_type_name[1], "and obj in pos(X Y)= (", 
+                                        data_5$X2[1],
+                                        data_5$Y2[2], ")",
+                                        sep = ' '))+
+        theme(legend.position="bottom") +
+    scale_y_continuous(sec.axis = sec_axis(~.*max(data_6_1_1$obj_Y)/max(data_6_1_1$value), 
+                                           name = "Y Position of Object")) + 
+    facet_grid(X1~.)
+  
+  grid.arrange(p5, p6, nrow = 1)
+
+}
+@
+
+\section{Analysis Goal Planning Enrichment!}
+<<echo=FALSE, message=FALSE, warning=FALSE, fig.width=11, fig.asp=0.6>>=
+
+final_data <- base_data[base_data$status==2 & base_data$step_size == 0.1,]
+final_data$diff_val <- abs(final_data$agent_X - final_data$obj_X)
+#final_data$diff_val2 <- sqrt((final_data$agent_X - final_data$obj_X)^2 + (final_data$agent_Y - final_data$obj_Y)^2)
+final_data$diff_val2 <- abs(final_data$agent_X - final_data$obj_X)
+final_data$valid <- sapply(final_data$diff_val2, function(X) if (X < 30+0.15) 'Catch' else 'Avoid')
+
+ggplot(final_data, aes(as.character(X1), diff_val2 , color=valid)) + geom_point() + #geom_boxplot(width=0.1)+
+  #stat_summary(fun.y=median, geom="point", size=2, color=valid) +
+  facet_grid(obj_type_name ~X2 ) + labs(title=paste("diff_val2 = dist(agent, obj) in final Step, X1=Agent Start X, X2= Obj Start X (All the charts partitioned by X2)"))
+
+@
+
+
+
+\end{document}
