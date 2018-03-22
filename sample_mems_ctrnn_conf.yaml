@@ -9,6 +9,7 @@ MEMS:
   rho : 2330                             # Mass density
   c  : 0.05
   K  : 1                                 # Dielectric constant
-
+  ythr : -3e-5
+  
 Network:
   size : 14
