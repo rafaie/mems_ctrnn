@@ -206,7 +206,7 @@ class MEMS_CTRNN:
             self.mem_rho = float(lines[16])
             self.mem_c = float(lines[18])
             self.mem_K = float(lines[20])
-            self.ythr = float(lines[22])
+            self.mem_ythr = float(lines[22])
 
             # Read the time constants
             d = lines[24].split()
@@ -230,19 +230,34 @@ class MEMS_CTRNN:
                 for j in range(self.size):
                     self.weights[i][j] = d[j]
 
+            self.calc_params()
+
     def save(self, path):
         with open(path, 'w') as fi:
             # Write the size
             fi.write(str(self.size) + '\n\n')
 
+            # Write the Mems Parameteres
+            fi.write(str(self.mem_L) + '\n\n')
+            fi.write(str(self.mem_b) + '\n\n')
+            fi.write(str(self.mem_g0) + '\n\n')
+            fi.write(str(self.mem_d) + '\n\n')
+            fi.write(str(self.mem_h) + '\n\n')
+            fi.write(str(self.mem_E1) + '\n\n')
+            fi.write(str(self.mem_nu) + '\n\n')
+            fi.write(str(self.mem_rho) + '\n\n')
+            fi.write(str(self.mem_c) + '\n\n')
+            fi.write(str(self.mem_K) + '\n\n')
+            fi.write(str(self.mem_ythr) + '\n\n')
+
             # Write the time constants
             fi.write(' '.join([str(i) for i in self.taus]) + '\n\n')
 
             # Write the biases
-            fi.write(' '.join([str(i) for i in self.biases]) + '\n\n')
+            fi.write(' '.join([str(i) for i in self.v_biases]) + '\n\n')
 
             # Write the gains
-            fi.write(' '.join([str(i) for i in self.gains]) + '\n\n')
+            fi.write(' '.join([str(i) for i in self.hs]) + '\n\n')
 
             # Write the weights
             for i in range(self.size):
