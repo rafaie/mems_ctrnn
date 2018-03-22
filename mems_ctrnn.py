@@ -1,30 +1,11 @@
 from utils import sigmoid, inverse_sigmoid
 import numpy as np
-import yaml
 import math
 
 
 class MEMS_CTRNN:
-    def __init__(self, conf_path, new_size=0):
-        with open(conf_path, 'r') as fi:
-            conf = yaml.load(fi)
-            self.load_data(conf)
-            self.calc_params()
+    def __init__(self, new_size=0):
         self.set_circuit_size(new_size)
-
-    def load_data(self, conf):
-        conf_mems = conf['MEMS']
-        self.mem_L = conf_mems['L']
-        self.mem_b = conf_mems['b']
-        self.mem_g0 = conf_mems['g0']
-        self.mem_h = conf_mems['h']
-        self.mem_E1 = conf_mems['E1']
-        self.mem_nu = conf_mems['nu']
-        self.mem_rho = conf_mems['rho']
-        self.mem_c = conf_mems['c']
-        self.mem_K = conf_mems['K']
-
-        self.size = conf['Network']['size']
 
     def calc_params(self):
         # Cross-sectional area
@@ -106,8 +87,8 @@ class MEMS_CTRNN:
         self.size = new_size
         self.states = np.full(new_size, 0.0, dtype=float)
         self.outputs = np.full(new_size, 0.0, dtype=float)
-        self.biases = np.full(new_size, 0.0, dtype=float)
-        self.gains = np.full(new_size, 1.0, dtype=float)
+        self.v_biases = np.full(new_size, 0.0, dtype=float)
+        self.hs = np.full(new_size, 1.0, dtype=float)
         self.taus = np.full(new_size, 1.0, dtype=float)
         self.Rtaus = np.full(new_size, 1.0, dtype=float)
         self.external_inputs = np.full(new_size, 0.0, dtype=float)
@@ -118,40 +99,6 @@ class MEMS_CTRNN:
         self.k2 = np.full(new_size, 0.0, dtype=float)
         self.k3 = np.full(new_size, 0.0, dtype=float)
         self.k4 = np.full(new_size, 0.0, dtype=float)
-
-    def neuron_state(self, i):
-        return self.states[i]
-
-    def set_neuron_state(self, i, value):
-        self.states[i] = value
-        self.outputs[i] = sigmoid(self.gains[i]*(self.states[i] +
-                                  self.biases[i]))
-
-    def neuron_output(self, i):
-        return self.outputs[i]
-
-    def set_neuron_output(self, i, value):
-        self.outputs[i] = value
-        self.states[i] = inverse_sigmoid(value)/self.gains[i] - \
-            self.iases[i]
-
-    def neuron_bias(self, i):
-        return self.biases[i]
-
-    def set_neuron_bias(self, i, value=None):
-        if value is None:
-            self.biases = i
-        else:
-            self.biases[i] = value
-
-    def neuron_gain(self, i):
-        return self.gains[i]
-
-    def set_neuron_gain(self, i, value=None):
-        if value is None:
-            self.gains = i
-        else:
-            self.gains[i] = value
 
     def neuron_time_constant(self, i):
         return self.taus[i]
@@ -170,44 +117,6 @@ class MEMS_CTRNN:
 
     def set_neuron_external_input(self, i, value):
         self.external_inputs[i] = value
-
-    def connection_weight(self, i, j):
-        return self.weights[i][j]
-
-    def set_connection_weight(self, i, j, value):
-        self.weights[i][j] = value
-
-    def lesion_neuron(self, n):
-        for i in range(self.size):
-            self.set_connection_weight(i, n, 0)
-            self.set_connection_weight(n, i, 0)
-
-    def set_center_crossing(self):
-        for i in range(self.size):
-            # Sum the input weights to this neuron
-            input_weight = 0
-            for j in range(self.size):
-                input_weight += self.connection_weight(i, j)
-
-            # Compute the corresponding ThetaStar
-            tetha_star = -input_weight/2
-            self.set_neuron_bias(i, tetha_star)
-
-    def randomize_circuit_state(self, lb, ub, rs=None):
-        if rs is None:
-            for i in range(self.size):
-                self.set_neuron_state(i, np.random.uniform(lb, ub))
-        else:
-            for i in range(self.size):
-                self.set_neuron_state(i, rs.uniform(lb, ub))
-
-    def randomize_circuit_output(self, lb, ub, rs=None):
-        if rs is None:
-            for i in range(self.size):
-                self.set_neuron_output(i, np.random.uniform(lb, ub))
-        else:
-            for i in range(self.size):
-                self.set_neuron_output(i, rs.uniform(lb, ub))
 
     # Integrate a circuit one step using 4th-order Runge-Kutta.
     def euler_step(self, step_size):
@@ -286,25 +195,38 @@ class MEMS_CTRNN:
             self.size = int(lines[0])
             self.set_circuit_size(self.size)
 
+            # Read Mems Parameteres
+            self.mem_L = float(lines[2])
+            self.mem_b = float(lines[4])
+            self.mem_g0 = float(lines[6])
+            self.mem_d = float(lines[8])
+            self.mem_h = float(lines[10])
+            self.mem_E1 = float(lines[12])
+            self.mem_nu = float(lines[14])
+            self.mem_rho = float(lines[16])
+            self.mem_c = float(lines[18])
+            self.mem_K = float(lines[20])
+            self.ythr = float(lines[22])
+
             # Read the time constants
-            d = lines[2].split()
+            d = lines[24].split()
             for i in range(self.size):
                 self.taus[i] = d[i]
                 self.Rtaus[i] = 1/self.taus[i]
 
             # Read the biases
-            d = lines[4].split()
+            d = lines[26].split()
             for i in range(self.size):
-                self.biases[i] = d[i]
+                self.v_biases[i] = d[i]
 
             # Read the gains
-            d = lines[6].split()
+            d = lines[28].split()
             for i in range(self.size):
-                self.gains[i] = d[i]
+                self.hs[i] = d[i]
 
             # Read the weights
             for i in range(self.size):
-                d = lines[8+i].split()
+                d = lines[30+i].split()
                 for j in range(self.size):
                     self.weights[i][j] = d[j]
 
