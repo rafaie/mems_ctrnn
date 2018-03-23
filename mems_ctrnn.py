@@ -29,7 +29,6 @@ class MEMS_CTRNN:
             self.mem_Sigma ** 2
         self.mem_K3Old = 0.06486615327408016 * self.mem_A * self.mem_wm ** 2\
             / self.mem_Iyy / self.mem_Sigma ** 2
-        # self.mem_K1 = self.mem_Kstar - self.mem_h ** 2 * self.mem_K3Old
         self.mem_K3 = self.mem_g0**2 * self.mem_K3Old
         self.mem_win = 2 / 3.0 * self.mem_b * self.mem_eps \
                          / (self.mem_A * self.mem_rho *
@@ -114,7 +113,7 @@ class MEMS_CTRNN:
         self.external_inputs[i] = value
 
     # Integrate a circuit one step using 4th-order Runge-Kutta.
-    def euler_step(self, step_size):
+    def euler_step(self):
         # Calculate the v_0
         for i in range(self.size):
             if self.states[i] < self.mem_ythr:
@@ -132,7 +131,7 @@ class MEMS_CTRNN:
                 self.mem_wm ** 2 / self.mem_Sigma ** 2 / self.mem_g0
             k1 = self.mem_Kstar - self.hs[i] ** 2 * self.mem_K3Old
 
-            self.states[i] += step_size * self.Rtaus[i] * \
+            self.states[i] += self.step_size * self.Rtaus[i] * \
                 (-k1 * self.states[i] - self.mem_k3 * self.states[i] ** 3 +
                  mem_theta + self.mem_win * v_mem ** 2 /
                  math.sqrt((1 + self.states[i]) ** 3))
@@ -148,39 +147,41 @@ class MEMS_CTRNN:
             # Read the size
             self.size = int(lines[0])
             self.set_circuit_size(self.size)
+            self.step_size = float(lines[2])
 
             # Read Mems Parameteres
-            self.mem_L = float(lines[2])
-            self.mem_b = float(lines[4])
-            self.mem_g0 = float(lines[6])
-            self.mem_d = float(lines[8])
-            self.mem_h = float(lines[10])
-            self.mem_E1 = float(lines[12])
-            self.mem_nu = float(lines[14])
-            self.mem_rho = float(lines[16])
-            self.mem_c = float(lines[18])
-            self.mem_K = float(lines[20])
-            self.mem_ythr = float(lines[22])
+            self.mem_L = float(lines[4])
+            self.mem_b = float(lines[6])
+            self.mem_g0 = float(lines[8])
+            self.mem_d = float(lines[10])
+            self.mem_h = float(lines[12])
+            self.mem_E1 = float(lines[14])
+            self.mem_nu = float(lines[16])
+            self.mem_rho = float(lines[18])
+            self.mem_c = float(lines[20])
+            self.mem_K = float(lines[22])
+            self.mem_ythr = float(lines[24])
+            self.mem_state_stopper = float(lines[26])
 
             # Read the time constants
-            d = lines[24].split()
+            d = lines[28].split()
             for i in range(self.size):
                 self.taus[i] = d[i]
                 self.Rtaus[i] = 1/self.taus[i]
 
             # Read the biases
-            d = lines[26].split()
+            d = lines[30].split()
             for i in range(self.size):
                 self.v_biases[i] = d[i]
 
             # Read the gains
-            d = lines[28].split()
+            d = lines[32].split()
             for i in range(self.size):
                 self.hs[i] = d[i]
 
             # Read the weights
             for i in range(self.size):
-                d = lines[30+i].split()
+                d = lines[34+i].split()
                 for j in range(self.size):
                     self.weights[i][j] = d[j]
 
@@ -190,6 +191,7 @@ class MEMS_CTRNN:
         with open(path, 'w') as fi:
             # Write the size
             fi.write(str(self.size) + '\n\n')
+            fi.write(str(self.step_size) + '\n\n')
 
             # Write the Mems Parameteres
             fi.write(str(self.mem_L) + '\n\n')
@@ -203,6 +205,7 @@ class MEMS_CTRNN:
             fi.write(str(self.mem_c) + '\n\n')
             fi.write(str(self.mem_K) + '\n\n')
             fi.write(str(self.mem_ythr) + '\n\n')
+            fi.write(str(self.mem_state_stopper) + '\n\n')
 
             # Write the time constants
             fi.write(' '.join([str(i) for i in self.taus]) + '\n\n')
