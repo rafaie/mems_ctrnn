@@ -1,4 +1,3 @@
-from utils import sigmoid, inverse_sigmoid
 import numpy as np
 import math
 
@@ -26,14 +25,15 @@ class MEMS_CTRNN:
                                           self.mem_L ** 4)
 
         self.mem_Sigma = self.mem_c / (self.mem_rho * self.mem_A)
-        # self.mem_theta = 1.0378584523852825 * self.mem_h * \
-        #     self.mem_wm ** 2 / self.mem_Sigma ** 2 / self.mem_g0
-        # self.mem_Kstar = 1.0378584523852825 * self.mem_wm ** 2 / \
-        #     self.mem_Sigma ** 2
-        # self.mem_K3Old = 0.06486615327408016 * self.mem_A * self.mem_wm ** 2\
-        #     / self.mem_Iyy / self.mem_Sigma ** 2
+        self.mem_Kstar = 1.0378584523852825 * self.mem_wm ** 2 / \
+            self.mem_Sigma ** 2
+        self.mem_K3Old = 0.06486615327408016 * self.mem_A * self.mem_wm ** 2\
+            / self.mem_Iyy / self.mem_Sigma ** 2
         # self.mem_K1 = self.mem_Kstar - self.mem_h ** 2 * self.mem_K3Old
-        # self.mem_K3 = self.mem_g0**2 * self.mem_K3Old
+        self.mem_K3 = self.mem_g0**2 * self.mem_K3Old
+        self.mem_win = 2 / 3.0 * self.mem_b * self.mem_eps \
+                         / (self.mem_A * self.mem_rho *
+                            self.mem_Sigma ** 2 * self.mem_g0 ** 3)
 
     # Show the Model details
     def print_model(self):
@@ -88,17 +88,12 @@ class MEMS_CTRNN:
         self.states = np.full(new_size, 0.0, dtype=float)
         self.outputs = np.full(new_size, 0.0, dtype=float)
         self.v_biases = np.full(new_size, 0.0, dtype=float)
+        self.v_outs = np.full(new_size, 0.0, dtype=float)
         self.hs = np.full(new_size, 1.0, dtype=float)
         self.taus = np.full(new_size, 1.0, dtype=float)
         self.Rtaus = np.full(new_size, 1.0, dtype=float)
         self.external_inputs = np.full(new_size, 0.0, dtype=float)
         self.weights = np.full((new_size, new_size), 0.0, dtype=float)
-        self.temp_states = np.full(new_size, 0.0, dtype=float)
-        self.temp_outputs = np.full(new_size, 0.0, dtype=float)
-        self.k1 = np.full(new_size, 0.0, dtype=float)
-        self.k2 = np.full(new_size, 0.0, dtype=float)
-        self.k3 = np.full(new_size, 0.0, dtype=float)
-        self.k4 = np.full(new_size, 0.0, dtype=float)
 
     def neuron_time_constant(self, i):
         return self.taus[i]
@@ -120,71 +115,30 @@ class MEMS_CTRNN:
 
     # Integrate a circuit one step using 4th-order Runge-Kutta.
     def euler_step(self, step_size):
+        # Calculate the v_0
+        for i in range(self.size):
+            if self.states[i] < self.mem_ythr:
+                self.v_outs[i] = self.external_inputs[i] + self.v_biases[i]
+            else:
+                self.v_outs[i] = 0
+
         # Update the state of all neurons.
         for i in range(self.size):
-            inp = self.external_inputs[i]
+            v_mem = self.external_inputs[i] + self.v_biases[i]
             for j in range(self.size):
-                inp += self.weights[j][i] * self.outputs[j]
+                v_mem += self.weights[j][i] * self.v_outs[j]
+
+            mem_theta = 1.0378584523852825 * self.hs[i] * \
+                self.mem_wm ** 2 / self.mem_Sigma ** 2 / self.mem_g0
+            k1 = self.mem_Kstar - self.hs[i] ** 2 * self.mem_K3Old
+
             self.states[i] += step_size * self.Rtaus[i] * \
-                (inp - self.states[i])
+                (-k1 * self.states[i] - self.mem_k3 * self.states[i] ** 3 +
+                 mem_theta + self.mem_win * v_mem ** 2 /
+                 math.sqrt((1 + self.states[i]) ** 3))
 
-        # Update the outputs of all neurons.
-        for i in range(self.size):
-            self.outputs[i] = sigmoid(self.gains[i] *
-                                      (self.states[i] + self.biases[i]))
-
-    def RK4_step(self, step_size):
-        # The first step.
-        for i in range(self.size):
-            inp = self.externalinputs[i]
-            for j in range(self.size):
-                inp += self.weights[j][i] * self.outputs[j]
-            self.k1[i] = step_size * self.Rtaus[i] * (inp - self.states[i])
-            self.temp_states[i] = self.states[i] + 0.5 * self.k1[i]
-            self.temp_outputs[i] = sigmoid(self.gains[i] *
-                                           (self.temp_states[i] +
-                                            self.biases[i]))
-
-        # The second step
-        for i in range(self.size):
-            inp = self.external_inputs[i]
-            for j in range(self.size):
-                inp += self.weights[j][i] * self.temp_outputs[j]
-            self.k2[i] = step_size * self.Rtaus[i] * \
-                (inp - self.temp_states[i])
-            self.temp_states[i] = self.states[i] + 0.5 * self.k2[i]
-
-        for i in range(self.size):
-            self.temp_outputs[i] = sigmoid(self.gains[i] *
-                                           (self.temp_states[i] +
-                                            self.biases[i]))
-
-        # The third step.
-        for i in range(self.size):
-            inp = self.external_inputs[i]
-            for j in range(self.size):
-                inp += self.weights[j][i] * self.temp_outputs[j]
-            self.k3[i] = step_size * self.Rtaus[i] * \
-                (inp - self.temp_states[i])
-            self.temp_states[i] = self.states[i] + self.k3[i]
-
-        for i in range(self.size):
-            self.temp_outputs[i] = sigmoid(self.gains[i] * (
-                                           self.temp_states[i] +
-                                           self.biases[i]))
-
-        # The fourth step.
-        for i in range(self.size):
-            inp = self.external_inputs[i]
-            for j in range(self.size):
-                inp += self.weights[j][i] * self.temp_outputs[j]
-            self.k4[i] = step_size * self.Rtaus[i] * \
-                (inp - self.temp_states[i])
-            self.states[i] += (1.0/6.0) * self.k1[i] + (1.0/3.0) * \
-                self.k2[i] + (1.0/3.0) * self.k3[i] + (1.0/6.0) * \
-                self.k4[i]
-            self.outputs[i] = sigmoid(self.gains[i] *
-                                      (self.states[i] + self.biases[i]))
+            if self.states[i] > self.mem_state_stopper:
+                self.states[i] = self.mem_state_stopper
 
     # Input and output from file
     def load(self, path):
