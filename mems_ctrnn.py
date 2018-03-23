@@ -34,13 +34,29 @@ class MEMS_CTRNN:
                          / (self.mem_A * self.mem_rho *
                             self.mem_Sigma ** 2 * self.mem_g0 ** 3)
 
+    # Print MEMS Parameteres
+    def print_mems_param(self):
+        print(f'mem_L = {self.mem_L}, mem_b = {self.mem_b}, ' +
+              f'mem_g0 = {self.mem_g0}, mem_d = {self.mem_d}')
+        print(f'mem_h = {self.mem_h}, mem_E1 = {self.mem_E1}, ' +
+              f'mem_nu = {self.mem_nu}, mem_rho = {self.mem_rho}, ')
+        print(f'mem_h = {self.mem_c}, mem_E1 = {self.mem_K}' +
+              f'mem_nu = {self.mem_ythr}, mem_rho = {self.mem_state_stopper}')
+        print(f'mem_A = {self.mem_A}, mem_E = {self.mem_E}, ' +
+              f'mem_Iyy = {self.mem_Iyy}, mem_eps = {self.mem_eps}')
+        print(f'mem_wm = {self.mem_wm}, mem_Sigma = {self.mem_Sigma}, ' +
+              f'mem_Kstar = {self.mem_Kstar}, mem_K3Old = {self.mem_K3Old}')
+        print(f'mem_K3 = {self.mem_K3}, mem_win = {self.mem_win}')
+
     # Show the Model details
     def print_model(self):
+        self.print_mems_param()
+        print('-----------------------------------------')
         for i in range(self.size):
             print('Neuron Number :', i)
             print('taus:', self.taus[i])
-            print('biases:', self.biases[i])
-            print('gains:', self.gains[i])
+            print('v_biases:', self.v_biases[i])
+            print('hs:', self.hs[i])
             print('It\'s the Weights:')
             for j in range(self.size):
                 print('Weight: ({}, {}) = {}'.format(i, j,
@@ -49,31 +65,30 @@ class MEMS_CTRNN:
 
     # Show the Model details
     def print_model_abstract(self):
-        o = ''
         t = ''
-        b = ''
-        g = ''
-        w = ''
         r = ''
+        v = ''
+        h = ''
         e = ''
         s = ''
+        w = ''
+
         for i in range(self.size):
-            o += str(round(self.outputs[i], 9)) + ', '
             t += str(round(self.taus[i], 9)) + ', '
             r += str(round(self.Rtaus[i], 9)) + ', '
-            b += str(round(self.biases[i], 9)) + ', '
-            g += str(round(self.gains[i], 9)) + ', '
+            v += str(round(self.v_biases[i], 9)) + ', '
+            h += str(round(self.hs[i], 9)) + ', '
             e += str(round(self.external_inputs[i], 9)) + ', '
             s += str(round(self.states[i], 9)) + ', '
             for j in range(self.size):
                 w += str(round(self.weights[i][j], 9)) + ', '
             w += '\n'
 
-        print("Output:", o)
+        self.print_mems_param()
         print("taus:", t)
         print("Rtaus:", r)
-        print("biases:", b)
-        print("gain:", g)
+        print("v_biases:", v)
+        print("hs:", h)
         print("external_inputs:", e)
         print("states:", s)
         print("weight:\n", w)
@@ -169,12 +184,12 @@ class MEMS_CTRNN:
                 self.taus[i] = d[i]
                 self.Rtaus[i] = 1/self.taus[i]
 
-            # Read the biases
+            # Read the v_biases
             d = lines[30].split()
             for i in range(self.size):
                 self.v_biases[i] = d[i]
 
-            # Read the gains
+            # Read the h's
             d = lines[32].split()
             for i in range(self.size):
                 self.hs[i] = d[i]
