@@ -128,7 +128,10 @@ class MEMS_CTRNN:
         self.external_inputs[i] = value
 
     # Integrate a circuit one step using 4th-order Runge-Kutta.
-    def euler_step(self):
+    def euler_step(self, step_size=None):
+        if step_size is not None:
+            self.step_size = step_size
+
         # Calculate the v_0
         for i in range(self.size):
             if self.states[i] < self.mem_ythr:
@@ -147,7 +150,7 @@ class MEMS_CTRNN:
             k1 = self.mem_Kstar - self.hs[i] ** 2 * self.mem_K3Old
 
             self.states[i] += self.step_size * self.Rtaus[i] * \
-                (-k1 * self.states[i] - self.mem_k3 * self.states[i] ** 3 +
+                (-k1 * self.states[i] - self.mem_K3 * self.states[i] ** 3 +
                  mem_theta + self.mem_win * v_mem ** 2 /
                  math.sqrt((1 + self.states[i]) ** 3))
 
