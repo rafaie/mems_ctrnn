@@ -34,14 +34,17 @@ class MEMS_CTRNN:
                          / (self.mem_A * self.mem_rho *
                             self.mem_Sigma ** 2 * self.mem_g0 ** 3)
 
+        self.states = np.full(self.size, self.mem_h/self.mem_g0, dtype=float)
+
     # Print MEMS Parameteres
     def print_mems_param(self):
         print(f'mem_L = {self.mem_L}, mem_b = {self.mem_b}, ' +
               f'mem_g0 = {self.mem_g0}, mem_d = {self.mem_d}')
         print(f'mem_h = {self.mem_h}, mem_E1 = {self.mem_E1}, ' +
               f'mem_nu = {self.mem_nu}, mem_rho = {self.mem_rho}, ')
-        print(f'mem_h = {self.mem_c}, mem_E1 = {self.mem_K}' +
-              f'mem_nu = {self.mem_ythr}, mem_rho = {self.mem_state_stopper}')
+        print(f'mem_c = {self.mem_c}, mem_K = {self.mem_K}, ' +
+              f'mem_ythr = {self.mem_ythr},' +
+              f' mem_state_stopper = {self.mem_state_stopper}')
         print(f'mem_A = {self.mem_A}, mem_E = {self.mem_E}, ' +
               f'mem_Iyy = {self.mem_Iyy}, mem_eps = {self.mem_eps}')
         print(f'mem_wm = {self.mem_wm}, mem_Sigma = {self.mem_Sigma}, ' +
@@ -145,16 +148,18 @@ class MEMS_CTRNN:
             for j in range(self.size):
                 v_mem += self.weights[j][i] * self.v_outs[j]
 
+            v_mem = max(v_mem, 0.0)
+
             mem_theta = 1.0378584523852825 * self.hs[i] * \
                 self.mem_wm ** 2 / self.mem_Sigma ** 2 / self.mem_g0
             k1 = self.mem_Kstar - self.hs[i] ** 2 * self.mem_K3Old
 
-            self.states[i] += self.step_size * self.Rtaus[i] * \
-                (-k1 * self.states[i] - self.mem_K3 * self.states[i] ** 3 +
-                 mem_theta + self.mem_win * v_mem ** 2 /
+            self.states[i] += self.step_size / self.Rtaus[i] * \
+                (-k1 * self.states[i] - self.mem_K3 * (self.states[i] ** 3) +
+                 mem_theta - self.mem_win * (v_mem ** 2) /
                  math.sqrt((1 + self.states[i]) ** 3))
 
-            if self.states[i] > self.mem_state_stopper:
+            if self.states[i] < self.mem_state_stopper:
                 self.states[i] = self.mem_state_stopper
 
     # Input and output from file
