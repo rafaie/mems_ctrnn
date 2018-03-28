@@ -6,8 +6,8 @@ import csv
 
 def gen_input(t):
     i1 = 80 if t > 200 else 0
-    i1 = i1 if t < 800 else 0
     i2 = 180 if t > 400 else 0
+    i2 = i2 if t < 800 else 0
 
     return (i1, i2)
 
