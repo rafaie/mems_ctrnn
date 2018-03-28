@@ -148,7 +148,7 @@ class MEMS_CTRNN:
             for j in range(self.size):
                 v_mem += self.weights[j][i] * self.v_outs[j]
 
-            v_mem = max(v_mem, 0.0)
+            v_mem = min(max(v_mem, 0.0), 110)
 
             mem_theta = 1.0378584523852825 * self.hs[i] * \
                 self.mem_wm ** 2 / self.mem_Sigma ** 2 / self.mem_g0
@@ -159,8 +159,8 @@ class MEMS_CTRNN:
                  mem_theta - self.mem_win * (v_mem ** 2) /
                  math.sqrt((1 + self.states[i]) ** 3))
 
-            if self.states[i] < self.mem_state_stopper:
-                self.states[i] = self.mem_state_stopper
+            # if self.states[i] < self.mem_state_stopper:
+            #     self.states[i] = self.mem_state_stopper
 
     # Input and output from file
     def load(self, path):
