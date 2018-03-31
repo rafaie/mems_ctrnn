@@ -3,13 +3,12 @@ MEMS:
   b  : 30e-6                             # Width
   g0 : 10.1e-6                           # Initial gap
   d  : 2.4e-6                            # Thickness
-  h  : 2.6e-6                            # Initial elevation
   E1 : 160e9                             # Young modulus
   nu : 0.22
   rho : 2330                             # Mass density
   c  : 0.05
   K  : 1                                 # Dielectric constant
   ythr : -3e-5
-  
+
 Network:
   size : 14
