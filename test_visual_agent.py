@@ -28,4 +28,3 @@ class TestVisualAgent(unittest.TestCase):
 
         external_input = self.calc_external_input(r)
         self.assertEqual(external_input, 0)
-        # print(' ==> ', external_input)
