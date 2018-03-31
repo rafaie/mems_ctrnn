@@ -1,4 +1,4 @@
-from CTRNN import CTRNN
+from vagent_mems_ctrnn import VAgent_MEMS_CTRNN
 from visual_object import Ray
 import math
 
@@ -20,7 +20,7 @@ class VisualAgent:
 
         self.num_rays = num_rays_
         self.rays = [Ray() for i in range(self.num_rays)]
-        self.nervous_system = CTRNN()
+        self.nervous_system = VAgent_MEMS_CTRNN()
         self.reset(ix, iy)
 
     # Accessors
@@ -38,10 +38,6 @@ class VisualAgent:
         self.cx = ix
         self.cy = iy
         self.vx = 0.0
-        if randomize:
-            self.nervous_system.randomize_circuit_state(-0.1, 0.1, rs)
-        else:
-            self.nervous_system.randomize_circuit_state(0.0, 0.0, rs)
         self.reset_rays()
 
     def step(self, step_size, object, show_details=False):
@@ -62,8 +58,8 @@ class VisualAgent:
         self.nervous_system.euler_step(step_size)
 
         # Update agent state
-        self.vx = VisualAgent.VEL_GAIN * (self.nervous_system.outputs[12] -
-                                          self.nervous_system.outputs[13])
+        self.vx = VisualAgent.VEL_GAIN * (self.nervous_system.output[0] -
+                                          self.nervous_system.output[1])
 
         self.cx += step_size * self.vx
 
