@@ -1,0 +1,38 @@
+version: 1
+formatters:
+  exformat:
+    format: '[%(asctime)s.%(msecs)03d] %(levelname)8s [%(name)s:%(filename)s:%(lineno)s %(process)d %(thread)d - %(funcName)20s()] %(message)s'
+  simple:
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+handlers:
+  console:
+    class: logging.StreamHandler
+    formatter: simple
+    stream: ext://sys.stdout
+  file:
+    class: logging.handlers.RotatingFileHandler
+    formatter: exformat
+    filename: logs/ga.log
+    maxBytes: 1048576000
+    backupCount: 50
+    encoding: utf8
+
+  error_file:
+    class: logging.handlers.RotatingFileHandler
+    level: ERROR
+    formatter: exformat
+    filename: logs/ga_error.log
+    maxBytes: 104857600
+    backupCount: 20
+    encoding: utf8
+
+loggers:
+  GA_LOG_HANDLER:
+    level: DEBUG
+    handlers: [console, file, error_file]
+    propagate: no
+
+
+root:
+  level: DEBUG
+  handlers: [console, file, error_file]
