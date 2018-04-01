@@ -15,8 +15,8 @@ MEMS:
 
 Training:
   genom_struct_path : genom_struct.csv
-  init_population_size : 100
-  population_size : 20
+  init_population_size : 20
+  population_size : 10
   mutation_rate : 0.20
   num_iteratitions : 20
   crossover_type : 1                     #GeneticAlgorithm.TWO_POINT_CROSSOVER
@@ -25,3 +25,4 @@ Training:
   cuncurrency : 5
   log_enable : true
   saved_model_count: 10
+  mid_neurons_count: 5

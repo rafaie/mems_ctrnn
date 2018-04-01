@@ -14,8 +14,8 @@ MEMS:
   state_stopper : 0.95
 
 Training:
-  genom_struct_path : genom_struct.csv
-  init_population_size : 6000
+  genom_struct_path : genom_struct_5n.csv
+  init_population_size : 2000
   population_size : 100
   mutation_rate : 0.20
   num_iteratitions : 150
@@ -25,3 +25,4 @@ Training:
   cuncurrency : 20
   log_enable : true
   saved_model_count: 15
+  mid_neurons_count: 5
