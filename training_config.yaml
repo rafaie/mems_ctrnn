@@ -18,10 +18,10 @@ Training:
   init_population_size : 6000
   population_size : 100
   mutation_rate : 0.20
-  num_iteratitions : 100
+  num_iteratitions : 150
   crossover_type : 1                     #GeneticAlgorithm.TWO_POINT_CROSSOVER
   fitness_goal : 0.97
   STEP_SIZE : 0.1
   cuncurrency : 20
   log_enable : true
-  saved_model_count: 10
+  saved_model_count: 15

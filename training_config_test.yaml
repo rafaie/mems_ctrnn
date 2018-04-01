@@ -15,13 +15,13 @@ MEMS:
 
 Training:
   genom_struct_path : genom_struct.csv
-  init_population_size : 30
-  population_size : 10
+  init_population_size : 100
+  population_size : 20
   mutation_rate : 0.20
-  num_iteratitions : 1
+  num_iteratitions : 20
   crossover_type : 1                     #GeneticAlgorithm.TWO_POINT_CROSSOVER
   fitness_goal : 0.97
-  STEP_SIZE : 0.001
+  STEP_SIZE : 0.1
   cuncurrency : 5
   log_enable : true
   saved_model_count: 10
