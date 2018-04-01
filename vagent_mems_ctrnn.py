@@ -43,8 +43,8 @@ class VAgent_MEMS_CTRNN(MEMS_CTRNN):
         MEMS_CTRNN.euler_step(self, step_size)
 
         for i in range(2):
-            self.outputs[i] = self.states[12+i] * self.out_alpha[i] + \
-                self.out_beta[i]
+            self.outputs[i] = self.states[self.size - 2 + i] * \
+                self.out_alpha[i] + self.out_beta[i]
 
     # Input and output from file
     def load(self, path):
