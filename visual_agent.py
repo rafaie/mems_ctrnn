@@ -58,8 +58,8 @@ class VisualAgent:
         self.nervous_system.euler_step(step_size)
 
         # Update agent state
-        self.vx = VisualAgent.VEL_GAIN * (self.nervous_system.output[0] -
-                                          self.nervous_system.output[1])
+        self.vx = VisualAgent.VEL_GAIN * (self.nervous_system.outputs[0] -
+                                          self.nervous_system.outputs[1])
 
         self.cx += step_size * self.vx
 

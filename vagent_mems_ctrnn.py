@@ -36,14 +36,15 @@ class VAgent_MEMS_CTRNN(MEMS_CTRNN):
     # Integrate a circuit one step using 4th-order Runge-Kutta.
     def euler_step(self, step_size=None):
         for i in range(7):
-            self.external_input[i] = self.inp_alpha[i] * \
-                self.external_input + self.inp_beta
+            self.external_inputs[i] = self.external_inputs[i] * \
+                 self.inp_alpha[i] + self.inp_beta[i]
 
+        # MEMS_CTRNN.euler_step(self, step_size * self.mem_wm)
         MEMS_CTRNN.euler_step(self, step_size)
 
         for i in range(2):
-            self.output[i] = self.states[13+i] * self.out_alpha + \
-                self.out_beta
+            self.outputs[i] = self.states[12+i] * self.out_alpha[i] + \
+                self.out_beta[i]
 
     # Input and output from file
     def load(self, path):
