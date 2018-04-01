@@ -1,0 +1,27 @@
+MEMS:
+  L  : 1000e-6                           # Length
+  b  : 30e-6                             # Width
+  g0 : 10.1e-6                           # Initial gap
+  d  : 2.4e-6                            # Thickness
+  h  : 2.6e-6                            # Thickness
+  E1 : 160e9                             # Young modulus
+  nu : 0.22
+  rho : 2330                             # Mass density
+  c  : 0.05
+  K  : 1                                 # Dielectric constant
+  ythr : -3e-5
+  taus: 1
+  state_stopper : 0.95
+
+Training:
+  genom_struct_path : genom_struct.csv
+  init_population_size : 30
+  population_size : 10
+  mutation_rate : 0.20
+  num_iteratitions : 1
+  crossover_type : 1                     #GeneticAlgorithm.TWO_POINT_CROSSOVER
+  fitness_goal : 0.97
+  STEP_SIZE : 0.001
+  cuncurrency : 5
+  log_enable : true
+  saved_model_count: 10
