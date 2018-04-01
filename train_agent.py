@@ -11,6 +11,7 @@ import random
 import time
 import csv
 import math
+import sys
 from visual_object import Line, Circle
 from visual_agent import VisualAgent
 from genetic_algorithm.genetic_algorithm import GeneticAlgorithm
@@ -23,6 +24,7 @@ LINE = 1
 CIRCLE = 2
 STEP_SIZE = 0.1
 MODEL_SIZE = 14
+MAX_DISTANCE = 100.0
 
 
 # dataset
@@ -41,19 +43,42 @@ def load_dataset():
             dataset.append([float(i) for i in row])
 
 
-def create_agent(genom):
+def create_agent(genom, show_details=False):
+    genom = list(genom)
     agent = VisualAgent(MODEL_SIZE)
     nervous_system = agent.nervous_system
     nervous_system.set_circuit_size(MODEL_SIZE)
-
-    nervous_system.set_neuron_time_constant(genom[:MODEL_SIZE])
-    nervous_system.set_neuron_bias(genom[MODEL_SIZE * 1: 2 * MODEL_SIZE])
-    nervous_system.set_neuron_gain(genom[MODEL_SIZE * 2: 3 * MODEL_SIZE])
+    nervous_system.hs = [0]*7 + genom[0:5] + [0] * 2
+    nervous_system.v_biases = genom[5: 5 + MODEL_SIZE]
 
     for i in range(MODEL_SIZE):
         for j in range(MODEL_SIZE):
-            v = genom[(i + 3) * MODEL_SIZE + j]
+            v = genom[19 + i * MODEL_SIZE + j]
             nervous_system.set_connection_weight(i, j, v)
+
+    nervous_system.inp_alpha = genom[215: 215 + 7]
+    nervous_system.inp_beta = genom[222: 222 + 7]
+
+    nervous_system.out_alpha = genom[229: 229 + 2]
+    nervous_system.out_beta = genom[231: 231 + 2]
+
+    nervous_system.mem_L = float(MEMS_info['L'])
+    nervous_system.mem_b = float(MEMS_info['b'])
+    nervous_system.mem_g0 = float(MEMS_info['g0'])
+    nervous_system.mem_d = float(MEMS_info['d'])
+    nervous_system.mem_h = float(MEMS_info['h'])
+    nervous_system.mem_E1 = float(MEMS_info['E1'])
+    nervous_system.mem_nu = float(MEMS_info['nu'])
+    nervous_system.mem_rho = float(MEMS_info['rho'])
+    nervous_system.mem_c = float(MEMS_info['c'])
+    nervous_system.mem_K = float(MEMS_info['K'])
+    nervous_system.mem_ythr = float(MEMS_info['ythr'])
+    nervous_system.mem_state_stopper = float(MEMS_info['state_stopper'])
+    nervous_system.step_size = STEP_SIZE
+    nervous_system.calc_params()
+
+    if show_details is True:
+        nervous_system.print_model_abstract()
 
     return agent
 
@@ -64,8 +89,6 @@ def run_process(data, agent, show_details=False):
     y1 = data[2]
     x2 = data[3]
     y2 = data[4]
-    goal_x = data[5]
-    goal_y = data[6]
 
     if obj_id == LINE:
         obj = Line()
@@ -107,23 +130,14 @@ def run_process(data, agent, show_details=False):
         print('finished computation at', end_time, ', elapsed time: ',
               end_time - start_time)
 
-    dist = math.sqrt((agent.positionX() - goal_x) ** 2 +
-                     (agent.positionY() - goal_y) ** 2)
+    dist = min(math.fabs(agent.positionX() - obj.positionX()), MAX_DISTANCE)
 
-    dist2 = math.sqrt((agent.positionX() - obj.positionX()) ** 2 +
-                      (agent.positionY() - obj.positionY()) ** 2)
-    f = 300
-    if obj_id == LINE:
-        if dist2 > 30:
-            f = (2000 - dist2) / 1000
-        else:
-            f = (30 - dist2) * 5
-    else:
-        if dist < 28:
-            f = dist / 10
-        else:
-            f = (dist - 28) * 10
+    f = dist/MAX_DISTANCE
+    if obj_id == CIRCLE:
+        f = 1 - f
+    f = math.pow(f, 1.5)
 
+    dist2 = 0
     return [agent.positionX(), agent.positionY(), obj.positionX(),
             obj.positionY(), dist, dist2, f]
 
@@ -141,44 +155,101 @@ def calc_fitness(genom):
         data2.append(data + o)
 
     logger.info('data2 = {} '.format(data2))
-    logger.info('mean = {} and median = {} '.format(np.mean(fitness),
-                np.median(fitness)))
+    logger.info('mean = {} and median = {} => {}'.format(np.mean(fitness),
+                np.median(fitness), fitness))
     return np.mean(fitness)
 
 
 # Save the best 10 models!
 def save_models(population):
-    for i in range(10):
+    for i in range(saved_model_count):
         agent = create_agent(population[i])
         agent.nervous_system.save('models/model_' + str(i) + '.ns')
 
 
-if __name__ == "__main__":
-    # Load logger
-    global logger
-    logging.config.dictConfig(
-        yaml.load(open('logging.yaml')))
-    logger = logging.getLogger(GeneticAlgorithm.LOGGER_HANDLER_NAME)
+def load_config(path):
+    print(path)
+    global STEP_SIZE, genom_struct_path, init_population_size
+    global population_size, mutation_rate, num_iteratitions
+    global crossover_type, fitness_goal, STEP_SIZE, log_enable
+    global cuncurrency, saved_model_count, MEMS_info
 
-    path = 'genom_struct.csv'
-    init_population_size = 6000
-    population_size = 100
-    mutation_rate = 0.20
-    num_iteratitions = 100
-    crossover_type = GeneticAlgorithm.TWO_POINT_CROSSOVER
-    fitness_goal = 0.00001
+    with open(path, 'r') as fi:
+        yaml_data = yaml.load(fi)
 
-    load_dataset()
+        MEMS_info = yaml_data['MEMS']
 
-    ga = GeneticAlgorithm(path)
+        training_conf = yaml_data['Training']
+
+        genom_struct_path = training_conf['genom_struct_path']
+        init_population_size = training_conf['init_population_size']
+        population_size = training_conf['population_size']
+        mutation_rate = training_conf['mutation_rate']
+        num_iteratitions = training_conf['num_iteratitions']
+        crossover_type = training_conf['crossover_type']
+        fitness_goal = training_conf['fitness_goal']
+        STEP_SIZE = training_conf['STEP_SIZE']
+        cuncurrency = training_conf['cuncurrency']
+        log_enable = training_conf['log_enable']
+        saved_model_count = training_conf['saved_model_count']
+
+
+def do_training():
+    print (genom_struct_path, MEMS_info, cuncurrency)
+
+    ga = GeneticAlgorithm(genom_struct_path)
     start_time = time.time()
     population = ga.run(init_population_size, population_size,
                         mutation_rate, num_iteratitions, crossover_type,
                         calc_fitness, fitness_goal,
-                        cuncurrency=20,
-                        reverse_fitness_order=False)
+                        cuncurrency=cuncurrency,
+                        reverse_fitness_order=True)
+
     save_models(population)
     end_time = time.time()
     print(population[:3].astype(float))
     print(population[:, -1].astype(float))
     print('Runtime :', end_time - start_time)
+
+
+def calc_fitness_for_model(model_path):
+    fitness = []
+    agent = VisualAgent(MODEL_SIZE)
+    agent.nervous_system.load(model_path)
+    # agent.nervous_system.print_model_abstract()
+
+    data2 = []
+
+    for data in dataset:
+        o = run_process(data, agent)
+        f = o[-1]
+        fitness.append(f)
+        data2.append(data + o)
+
+    logger.info('data2 = {} '.format(data2))
+    logger.info('=> {}'.format(fitness))
+    logger.info('mean = {} and median = {}'.format(np.mean(fitness),
+                np.median(fitness)))
+
+
+if __name__ == "__main__":
+    config_path = 'training_config.yaml'
+    if len(sys.argv) > 1:
+        config_path = sys.argv[1]
+
+    load_config(config_path)
+
+    if log_enable is True:
+        # Load logger
+        global logger
+        logging.config.dictConfig(
+            yaml.load(open('logging.yaml')))
+        logger = logging.getLogger(GeneticAlgorithm.LOGGER_HANDLER_NAME)
+
+    load_dataset()
+
+    if len(sys.argv) <= 2:
+        do_training()
+    else:
+        model_path = sys.argv[2]
+        calc_fitness_for_model(model_path)
