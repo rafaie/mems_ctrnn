@@ -112,6 +112,9 @@ class MEMS_CTRNN:
         self.external_inputs = np.full(new_size, 0.0, dtype=float)
         self.weights = np.full((new_size, new_size), 0.0, dtype=float)
 
+    def set_connection_weight(self, i, j, value):
+            self.weights[i][j] = value
+
     def neuron_time_constant(self, i):
         return self.taus[i]
 
