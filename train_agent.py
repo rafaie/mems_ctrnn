@@ -45,22 +45,28 @@ def load_dataset():
 
 def create_agent(genom, show_details=False):
     genom = list(genom)
+
+    n = MODEL_SIZE * MODEL_SIZE + mid_neurons_count + MODEL_SIZE
+    if len(genom) - 1 != n + 2*7 + 4:
+        raise NameError('There is an Error in training configuration!!')
+
     agent = VisualAgent(MODEL_SIZE)
     nervous_system = agent.nervous_system
     nervous_system.set_circuit_size(MODEL_SIZE)
-    nervous_system.hs = [0]*7 + genom[0:5] + [0] * 2
-    nervous_system.v_biases = genom[5: 5 + MODEL_SIZE]
+    nervous_system.hs = [0]*7 + genom[0:mid_neurons_count] + [0] * 2
+    nervous_system.v_biases = genom[mid_neurons_count: mid_neurons_count
+                                    + MODEL_SIZE]
 
     for i in range(MODEL_SIZE):
         for j in range(MODEL_SIZE):
-            v = genom[19 + i * MODEL_SIZE + j]
+            v = genom[mid_neurons_count + MODEL_SIZE + i * MODEL_SIZE + j]
             nervous_system.set_connection_weight(i, j, v)
 
-    nervous_system.inp_alpha = genom[215: 215 + 7]
-    nervous_system.inp_beta = genom[222: 222 + 7]
+    nervous_system.inp_alpha = genom[n: n + 7]
+    nervous_system.inp_beta = genom[n + 7: n + 2*7]
 
-    nervous_system.out_alpha = genom[229: 229 + 2]
-    nervous_system.out_beta = genom[231: 231 + 2]
+    nervous_system.out_alpha = genom[n + 2*7: n + 2*7 + 2]
+    nervous_system.out_beta = genom[n + 2*7 + 2: n + 2*7 + 4]
 
     nervous_system.mem_L = float(MEMS_info['L'])
     nervous_system.mem_b = float(MEMS_info['b'])
@@ -172,7 +178,8 @@ def load_config(path):
     global STEP_SIZE, genom_struct_path, init_population_size
     global population_size, mutation_rate, num_iteratitions
     global crossover_type, fitness_goal, STEP_SIZE, log_enable
-    global cuncurrency, saved_model_count, MEMS_info
+    global cuncurrency, saved_model_count, MEMS_info, mid_neurons_count
+    global MODEL_SIZE
 
     with open(path, 'r') as fi:
         yaml_data = yaml.load(fi)
@@ -192,6 +199,8 @@ def load_config(path):
         cuncurrency = training_conf['cuncurrency']
         log_enable = training_conf['log_enable']
         saved_model_count = training_conf['saved_model_count']
+        mid_neurons_count = int(training_conf['mid_neurons_count'])
+        MODEL_SIZE = 7 + mid_neurons_count + 2
 
 
 def do_training():
