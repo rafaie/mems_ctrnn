@@ -172,6 +172,12 @@ def save_models(population):
         agent = create_agent(population[i])
         agent.nervous_system.save('models/model_' + str(i) + '.ns')
 
+    fi_name = 'models/population'
+    np.save(fi_name, np.array(population))
+
+    p = np.load(fi_name + '.npy')
+    print(p)
+
 
 def load_config(path):
     print(path)
