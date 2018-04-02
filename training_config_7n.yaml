@@ -26,3 +26,5 @@ Training:
   log_enable : true
   saved_model_count: 15
   mid_neurons_count: 7
+  population_np_path: models/population_7n.npy
+  reload_np_population_rate: 0.05
