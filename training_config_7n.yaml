@@ -28,3 +28,5 @@ Training:
   mid_neurons_count: 7
   population_np_path: models/population_7n.npy
   reload_np_population_rate: 0.05
+  agent_vel_x: 5
+  obj_vel_y: -3
