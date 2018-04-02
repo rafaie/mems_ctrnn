@@ -89,7 +89,7 @@ def create_agent(genom, show_details=False):
     return agent
 
 
-def run_process(data, agent, show_details=False):
+def run_process(data, agent, show_details=False, outfile_csv=None):
     obj_id = data[0]
     x1 = data[1]
     y1 = data[2]
@@ -124,7 +124,11 @@ def run_process(data, agent, show_details=False):
             print(agent.positionX(), agent.positionY())
             print(obj.positionX(), obj.positionY())
 
-        status = 1
+        if outfile_csv is not None:
+            outfile_csv.writerow([obj_id, timer, STEP_SIZE, x1, y1, x2, y2,
+                                  agent.positionX(), agent.positionY(),
+                                  obj.positionX(), obj.positionY(), status])
+            status = 1
         agent.step(STEP_SIZE, obj, show_details=show_details)
         obj.step(STEP_SIZE)
         if show_details is True:
@@ -144,6 +148,12 @@ def run_process(data, agent, show_details=False):
     f = math.pow(f, 1.5)
 
     dist2 = 0
+
+    if outfile_csv is not None:
+        outfile_csv.writerow([obj_id, timer, STEP_SIZE, x1, y1, x2, y2,
+                              agent.positionX(), agent.positionY(),
+                              obj.positionX(), obj.positionY(), status])
+
     return [agent.positionX(), agent.positionY(), obj.positionX(),
             obj.positionY(), dist, dist2, f]
 
@@ -171,12 +181,13 @@ def save_models(population):
     for i in range(saved_model_count):
         agent = create_agent(population[i])
         agent.nervous_system.save('models/model_' + str(i) + '.ns')
+        logger.info('i = {} and genom = {}'.format(i, population[i]))
 
     fi_name = 'models/population'
     np.save(fi_name, np.array(population))
 
     p = np.load(fi_name + '.npy')
-    print(p)
+    logger.info(p)
 
 
 def load_config(path):
@@ -235,11 +246,18 @@ def calc_fitness_for_model(model_path):
 
     data2 = []
 
-    for data in dataset:
-        o = run_process(data, agent)
-        f = o[-1]
-        fitness.append(f)
-        data2.append(data + o)
+    with open('output.csv', 'w') as outfile:
+        outfile_csv = csv.writer(outfile, delimiter=',',
+                                 quotechar="'", quoting=csv.QUOTE_MINIMAL)
+        outfile_csv.writerow(['obj_type', 'timer', 'step_size', 'X1', 'Y1',
+                              'X2', 'Y2', 'agent_X', 'agent_Y', 'obj_X',
+                              'obj_Y', 'status'])
+
+        for data in dataset:
+            o = run_process(data, agent, outfile_csv=outfile_csv)
+            f = o[-1]
+            fitness.append(f)
+            data2.append(data + o)
 
     logger.info('data2 = {} '.format(data2))
     logger.info('=> {}'.format(fitness))
