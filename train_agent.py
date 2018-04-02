@@ -50,7 +50,7 @@ def create_agent(genom, show_details=False):
     if len(genom) - 1 != n + 2*7 + 4:
         raise NameError('There is an Error in training configuration!!')
 
-    agent = VisualAgent(MODEL_SIZE)
+    agent = VisualAgent(MODEL_SIZE, agent_vel_x=agent_vel_x)
     nervous_system = agent.nervous_system
     nervous_system.set_circuit_size(MODEL_SIZE)
     nervous_system.hs = [0]*7 + genom[0:mid_neurons_count] + [0] * 2
@@ -97,9 +97,9 @@ def run_process(data, agent, show_details=False, outfile_csv=None):
     y2 = data[4]
 
     if obj_id == LINE:
-        obj = Line()
+        obj = Line(vy=obj_vel_y)
     else:
-        obj = Circle()
+        obj = Circle(vy=obj_vel_y)
 
     # Run the agent
     random.seed()
@@ -165,7 +165,7 @@ def calc_fitness(genom):
     data2 = []
 
     for data in dataset:
-        o = run_process(data, agent)
+        o = run_process(data, agent, agent_vel_x=agent_vel_x)
         f = o[-1]
         fitness.append(f)
         data2.append(data + o)
@@ -197,6 +197,7 @@ def load_config(path):
     global crossover_type, fitness_goal, STEP_SIZE, log_enable
     global cuncurrency, saved_model_count, MEMS_info, mid_neurons_count
     global MODEL_SIZE, population_np_path, reload_np_population_rate
+    global agent_vel_x, obj_vel_y
 
     with open(path, 'r') as fi:
         yaml_data = yaml.load(fi)
@@ -223,6 +224,9 @@ def load_config(path):
         reload_np_population_rate = float(training_conf[
                                         'reload_np_population_rate'])
 
+        agent_vel_x = float(training_conf['agent_vel_x'])
+        obj_vel_y = float(training_conf['obj_vel_y'])
+
 
 def do_training():
     print (genom_struct_path, MEMS_info, cuncurrency)
@@ -246,9 +250,10 @@ def do_training():
 
 def calc_fitness_for_model(model_path):
     fitness = []
-    agent = VisualAgent(MODEL_SIZE)
+    agent = VisualAgent(MODEL_SIZE, agent_vel_x=agent_vel_x)
     agent.nervous_system.load(model_path)
-    # agent.nervous_system.print_model_abstract()
+    agent.nervous_system.print_model_abstract()
+    agent.nervous_system.print_model()
 
     data2 = []
 
