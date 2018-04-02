@@ -13,7 +13,7 @@ class VisualAgent:
     VISUAL_ANGLE = math.pi/6
     VEL_GAIN = 5
 
-    def __init__(self, ix=0.0, iy=0.0, num_rays_=7):
+    def __init__(self, ix=0.0, iy=0.0, num_rays_=7, agent_vel_x=None):
         self.cx = 0
         self.cy = 0
         self.vx = 0
@@ -22,6 +22,9 @@ class VisualAgent:
         self.rays = [Ray() for i in range(self.num_rays)]
         self.nervous_system = VAgent_MEMS_CTRNN()
         self.reset(ix, iy)
+
+        if agent_vel_x is not None:
+            VisualAgent.VEL_GAIN = agent_vel_x
 
     # Accessors
     def positionX(self):
