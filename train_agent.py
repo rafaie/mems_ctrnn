@@ -183,10 +183,10 @@ def save_models(population):
         agent.nervous_system.save('models/model_' + str(i) + '.ns')
         logger.info('i = {} and genom = {}'.format(i, population[i]))
 
-    fi_name = 'models/population'
+    fi_name = population_np_path
     np.save(fi_name, np.array(population))
 
-    p = np.load(fi_name + '.npy')
+    p = np.load(fi_name)
     logger.info(p)
 
 
@@ -196,7 +196,7 @@ def load_config(path):
     global population_size, mutation_rate, num_iteratitions
     global crossover_type, fitness_goal, STEP_SIZE, log_enable
     global cuncurrency, saved_model_count, MEMS_info, mid_neurons_count
-    global MODEL_SIZE
+    global MODEL_SIZE, population_np_path, reload_np_population_rate
 
     with open(path, 'r') as fi:
         yaml_data = yaml.load(fi)
@@ -219,6 +219,10 @@ def load_config(path):
         mid_neurons_count = int(training_conf['mid_neurons_count'])
         MODEL_SIZE = 7 + mid_neurons_count + 2
 
+        population_np_path = training_conf['population_np_path']
+        reload_np_population_rate = float(training_conf[
+                                        'reload_np_population_rate'])
+
 
 def do_training():
     print (genom_struct_path, MEMS_info, cuncurrency)
@@ -229,7 +233,9 @@ def do_training():
                         mutation_rate, num_iteratitions, crossover_type,
                         calc_fitness, fitness_goal,
                         cuncurrency=cuncurrency,
-                        reverse_fitness_order=True)
+                        reverse_fitness_order=True,
+                        population_np_path=population_np_path,
+                        reload_np_population_rate=reload_np_population_rate)
 
     save_models(population)
     end_time = time.time()
