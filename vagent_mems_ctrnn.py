@@ -92,23 +92,25 @@ class VAgent_MEMS_CTRNN(MEMS_CTRNN):
                 for j in range(self.size):
                     self.weights[i][j] = d[j]
 
+            n = 34 + self.size + 1
+            print(n)
             # Read the inp_alpha
-            d = lines[49].split()
+            d = lines[n].split()
             for i in range(7):
                 self.inp_alpha[i] = d[i]
 
             # Read the inp_beta
-            d = lines[51].split()
+            d = lines[n + 2].split()
             for i in range(7):
                 self.inp_beta[i] = d[i]
 
             # Read the out_alpha
-            d = lines[53].split()
+            d = lines[n + 4].split()
             for i in range(2):
                 self.out_alpha[i] = d[i]
 
             # Read the out_beta
-            d = lines[55].split()
+            d = lines[n + 6].split()
             for i in range(2):
                 self.out_beta[i] = d[i]
 
