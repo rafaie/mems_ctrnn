@@ -26,7 +26,7 @@ base_data$obj_type_name <- sapply(base_data$obj_type, function(X) if (X==1) 'Lin
 #         geom_line() + labs(title=paste("Vote/PMV Chart for day ", sep = ' ')) +
 #        theme(legend.position='none')
 
-#data_2 = base_data[base_data$X2 == 30 & base_data$Y2==150 & base_data$step_size == 0.1
+#data_2 = base_data[base_data$X2 == 30 & base_data$Y2==150 
 #                  &  base_data$X1 < 0 & base_data$obj_type == 2, ]
 #a2 <- ggplot(data_2, aes(timer, agent_X)) +
 #         geom_line() + labs(title=paste("Vote/PMV Chart for day ", sep = ' '))+
@@ -40,7 +40,7 @@ vars <- unique(base_data[, c(6,7)])
 for (i in c(1:length(vars$X2)) ){
   opt = vars[i,]
   
-  data_3 = base_data[base_data$X2 == opt$X2 & base_data$Y2==opt$Y2 & base_data$step_size == 0.1
+  data_3 = base_data[base_data$X2 == opt$X2 & base_data$Y2==opt$Y2 
                   & base_data$obj_type == 1, ]
   data_3_1 = melt(data_3[,c(2,4,8,10)], id=c(1,2))
   p3<-ggplot(data_3_1, aes(timer, value, color=variable)) +
@@ -51,7 +51,7 @@ for (i in c(1:length(vars$X2)) ){
                                         sep = ' '))+
         theme(legend.position="bottom") + facet_grid(X1~.)
   
-  data_4 = base_data[base_data$X2 == opt$X2 & base_data$Y2==opt$Y2 & base_data$step_size == 0.1
+  data_4 = base_data[base_data$X2 == opt$X2 & base_data$Y2==opt$Y2 
                   & base_data$obj_type == 2, ]
   data_4_1 = melt(data_4[,c(2,4,8,10)], id=c(1,2))
   p4<-ggplot(data_4_1, aes(timer, value, color=variable)) +
@@ -73,7 +73,7 @@ vars <- unique(base_data[, c(6,7)])
 for (i in c(1:length(vars$X2)) ){
   #i = 1
   opt = vars[i,]
-  data_5 = base_data[base_data$X2 == opt$X2 & base_data$Y2==opt$Y2 & base_data$step_size == 0.1
+  data_5 = base_data[base_data$X2 == opt$X2 & base_data$Y2==opt$Y2 
                   & base_data$obj_type == 1, ]
   
   data_5_1 = melt(data_5[,c(2,4,8,10)], id=c(1,2))
@@ -92,7 +92,7 @@ for (i in c(1:length(vars$X2)) ){
     facet_grid(X1~.)
   
   
-  data_6 = base_data[base_data$X2 == opt$X2 & base_data$Y2==opt$Y2 & base_data$step_size == 0.1
+  data_6 = base_data[base_data$X2 == opt$X2 & base_data$Y2==opt$Y2 
                   & base_data$obj_type == 2, ]
   
   data_6_1 = melt(data_6[,c(2,4,8,10)], id=c(1,2))
@@ -122,7 +122,7 @@ vars <- unique(base_data[, c(6,7)])
 for (i in c(1:length(vars$X2)) ){
   #i = 1
   opt = vars[i,]
-  data_5 = base_data[base_data$X2 == opt$X2 & base_data$Y2==opt$Y2 & base_data$step_size == 0.1
+  data_5 = base_data[base_data$X2 == opt$X2 & base_data$Y2==opt$Y2 
                   & base_data$obj_type == 1, ]
   
   data_5_1 = melt(data_5[,c(2,4,8,10)], id=c(1,2))
@@ -141,7 +141,7 @@ for (i in c(1:length(vars$X2)) ){
     facet_grid(X1~.)
   
   
-  data_6 = base_data[base_data$X2 == opt$X2 & base_data$Y2==opt$Y2 & base_data$step_size == 0.1
+  data_6 = base_data[base_data$X2 == opt$X2 & base_data$Y2==opt$Y2 
                   & base_data$obj_type == 2, ]
   
   data_6_1 = melt(data_6[,c(2,4,8,10)], id=c(1,2))
@@ -167,7 +167,7 @@ for (i in c(1:length(vars$X2)) ){
 \section{Analysis Goal Planning Enrichment!}
 <<echo=FALSE, message=FALSE, warning=FALSE, fig.width=11, fig.asp=0.6>>=
 
-final_data <- base_data[base_data$status==2 & base_data$step_size == 0.1,]
+final_data <- base_data[base_data$status==2 ,]
 final_data$diff_val <- abs(final_data$agent_X - final_data$obj_X)
 #final_data$diff_val2 <- sqrt((final_data$agent_X - final_data$obj_X)^2 + (final_data$agent_Y - final_data$obj_Y)^2)
 final_data$diff_val2 <- abs(final_data$agent_X - final_data$obj_X)
