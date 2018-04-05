@@ -27,7 +27,11 @@ def calculate_with_stablizing(c, a, b, l, i, i1, i2,
     if i >= l and \
        abs(a[(i - l) % l] - c.states[-2]) < max_variation and \
        abs(b[(i - l) % l] - c.states[-1]) < max_variation:
-        print(i, normalized, 'break')
+        t = 'nondimensional' if normalized is False else 'dimensional'
+        print('The MEMCTRN {} is stablized in iteration {} for '.format(t, i) +
+              'input1 = {}, input2 = {} and max_variation= {}'.
+              format(i1, i2, max_variation))
+
         return True
     elif i >= l:
         a[(i - l) % l] = c.states[-2]
@@ -145,7 +149,8 @@ if __name__ == "__main__":
         plt.subplot(411)
         plt.plot(in1_np[:, 0], in1_np[:, 1], "g-", label='Input 1')
         plt.plot(in2_np[:, 0], in2_np[:, 1], "y-", label='Input 2')
-        plt.title('Input - The time is in Second')
+        plt.title('Input - The time is in Second and max_variation ' +
+                  str(max_variation))
         plt.legend()
         plt.subplot(412)
         plt.plot(out1_np[:, 0], out1_np[:, 1], "r-", label='Output 1 - Normal')
