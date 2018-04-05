@@ -134,7 +134,7 @@ class MEMS_CTRNN:
         self.external_inputs[i] = value
 
     # Integrate a circuit one step using 4th-order Runge-Kutta.
-    def euler_step(self, step_size=None):
+    def euler_step(self, step_size=None, normalized=False):
         if step_size is not None:
             self.step_size = step_size
 
@@ -157,10 +157,28 @@ class MEMS_CTRNN:
                 self.mem_wm ** 2 / self.mem_Sigma ** 2 / self.mem_g0
             k1 = self.mem_Kstar - self.hs[i] ** 2 * self.mem_K3Old
 
-            self.states[i] += self.step_size / self.Rtaus[i] * \
-                (-k1 * self.states[i] - self.mem_K3 * (self.states[i] ** 3) +
-                 mem_theta - self.mem_win * (v_mem ** 2) /
-                 math.sqrt((1 + self.states[i]) ** 3))
+            if normalized is False:
+                self.states[i] += self.step_size / self.Rtaus[i] * \
+                    (-k1 * self.states[i] - self.mem_K3 * (self.states[i] ** 3) +
+                     mem_theta - self.mem_win * (v_mem ** 2) /
+                     math.sqrt((1 + self.states[i]) ** 3))
+
+            else:
+                self.states[i] += (8 * step_size) / \
+                     (3 * self.mem_L * self.mem_c * self.mem_g0) * \
+                     (
+                      ((-2 * math.pi ** 4 / self.mem_L ** 3) *
+                       self.mem_E * self.mem_Iyy *
+                       (self.mem_g0 * self.states[i] - self.mem_h)) -
+                      (math.pi ** 4 / (8 * self.mem_L ** 3) * self.mem_E *
+                       self.mem_A * (self.mem_g0 ** 2 * self.states[i] ** 2 -
+                                     self.mem_h ** 2) *
+                       self.mem_g0 * self.states[i]) -
+                      (self.mem_eps * self.mem_b * v_mem ** 2 * self.mem_L /
+                       (4 * math.sqrt(self.mem_g0 *
+                                      (self.mem_g0 + self.mem_g0 * self.states[i])
+                                      ** 3)))
+                      )
 
             # if self.states[i] < self.mem_state_stopper:
             #     self.states[i] = self.mem_state_stopper
