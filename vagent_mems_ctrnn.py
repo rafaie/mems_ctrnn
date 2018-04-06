@@ -10,9 +10,10 @@ class VAgent_MEMS_CTRNN(MEMS_CTRNN):
                  stability_hist_bucket=3, stability_min_iteration=7,
                  stability_max_iteration=150):
 
-        self.stability_acc = stability_acc,
-        self.stability_hist_bucket = stability_hist_bucket,
+        self.stability_acc = stability_acc
+        self.stability_hist_bucket = stability_hist_bucket
         self.stability_min_iteration = stability_min_iteration
+        self.stability_max_iteration = stability_max_iteration
 
         MEMS_CTRNN.__init__(self, new_size)
 
@@ -45,7 +46,7 @@ class VAgent_MEMS_CTRNN(MEMS_CTRNN):
         self.outputs = np.full(2, 0.0, dtype=float)
 
     def euler_step_with_stability(self, step_size=None, use_dim_equation=False,
-                                  save_detail=True):
+                                  save_detail=False):
 
         if save_detail is True:
             outfile = open('duration_analysis.csv', 'a')
@@ -72,17 +73,21 @@ class VAgent_MEMS_CTRNN(MEMS_CTRNN):
             if i >= self.stability_min_iteration and \
                abs(a[(i - l) % l] - self.states[-2]) < self.stability_acc and \
                abs(b[(i - l) % l] - self.states[-1]) < self.stability_acc:
+                # print(i)
                 break
             elif i >= l:
                 a[(i - l) % l] = self.states[-2]
                 b[(i - l) % l] = self.states[-1]
+
+        if i >= 10:
+            print(i)
 
         if save_detail is True:
             outfile.close()
 
     # Integrate a circuit one step using 4th-order Runge-Kutta.
     def euler_step(self, step_size=None, use_dim_equation=False,
-                   save_detail=True):
+                   save_detail=False):
         for i in range(7):
             self.external_inputs[i] = self.external_inputs[i] * \
                  self.inp_alpha[i] + self.inp_beta[i]
