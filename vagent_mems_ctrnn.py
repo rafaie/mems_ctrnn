@@ -1,8 +1,20 @@
 from mems_ctrnn import MEMS_CTRNN
 import numpy as np
+import csv
+import time
 
 
 class VAgent_MEMS_CTRNN(MEMS_CTRNN):
+
+    def __init__(self, new_size=0, stability_acc=0.001,
+                 stability_hist_bucket=3, stability_min_iteration=7,
+                 stability_max_iteration=150):
+
+        self.stability_acc = stability_acc,
+        self.stability_hist_bucket = stability_hist_bucket,
+        self.stability_min_iteration = stability_min_iteration
+
+        MEMS_CTRNN.__init__(self, new_size)
 
     def print_vagent_variables(self):
         i_a = ', '.join([str(i) for i in self.inp_alpha])
@@ -30,17 +42,53 @@ class VAgent_MEMS_CTRNN(MEMS_CTRNN):
         self.inp_beta = np.full(7, 0.0, dtype=float)
         self.out_alpha = np.full(2, 1.0, dtype=float)
         self.out_beta = np.full(2, 0.0, dtype=float)
-
         self.outputs = np.full(2, 0.0, dtype=float)
 
+    def euler_step_with_stability(self, step_size=None, use_dim_equation=False,
+                                  save_detail=True):
+
+        if save_detail is True:
+            outfile = open('duration_analysis.csv', 'a')
+            outfile_csv = csv.writer(outfile, delimiter=',',
+                                     quotechar="'", quoting=csv.QUOTE_MINIMAL)
+
+        a = [0] * self.stability_hist_bucket
+        b = [0] * self.stability_hist_bucket
+        l = self.stability_hist_bucket
+
+        t = time.time()
+
+        for i in range(self.stability_max_iteration):
+            MEMS_CTRNN.euler_step(self, step_size, use_dim_equation)
+            if save_detail is True:
+                outfile_csv.writerow([t, i, step_size,
+                                      self.states[-2], self.states[-1], '-',
+                                      a[(i - l) % l],
+                                      b[(i - l) % l], '-',
+                                      (i - l) % l, '-',
+                                      a[(i - l) % l] - b[(i - l) % l], '-',
+                                      a, b])
+
+            if i >= self.stability_min_iteration and \
+               abs(a[(i - l) % l] - self.states[-2]) < self.stability_acc and \
+               abs(b[(i - l) % l] - self.states[-1]) < self.stability_acc:
+                break
+            elif i >= l:
+                a[(i - l) % l] = self.states[-2]
+                b[(i - l) % l] = self.states[-1]
+
+        if save_detail is True:
+            outfile.close()
+
     # Integrate a circuit one step using 4th-order Runge-Kutta.
-    def euler_step(self, step_size=None):
+    def euler_step(self, step_size=None, use_dim_equation=False,
+                   save_detail=True):
         for i in range(7):
             self.external_inputs[i] = self.external_inputs[i] * \
                  self.inp_alpha[i] + self.inp_beta[i]
 
-        # MEMS_CTRNN.euler_step(self, step_size * self.mem_wm)
-        MEMS_CTRNN.euler_step(self, step_size)
+        self.euler_step_with_stability(step_size, use_dim_equation,
+                                       save_detail)
 
         for i in range(2):
             self.outputs[i] = self.states[self.size - 2 + i] * \
