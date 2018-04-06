@@ -23,8 +23,8 @@ class VisualAgent:
         self.cy = 0
         self.vx = 0
 
-        self.stability_acc = stability_acc,
-        self.stability_hist_bucket = stability_hist_bucket,
+        self.stability_acc = stability_acc
+        self.stability_hist_bucket = stability_hist_bucket
         self.stability_min_iteration = stability_min_iteration
         self.stability_max_iteration = stability_max_iteration
 
