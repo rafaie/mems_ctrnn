@@ -171,7 +171,7 @@ def calc_fitness(genom):
     data2 = []
 
     for data in dataset:
-        o = run_process(data, agent, agent_vel_x=agent_vel_x)
+        o = run_process(data, agent)
         f = o[-1]
         fitness.append(f)
         data2.append(data + o)
