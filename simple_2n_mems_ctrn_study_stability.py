@@ -100,7 +100,8 @@ if __name__ == "__main__":
             c.euler_step(1)
             out1.append((time, c.states[0]))
             out2.append((time, c.states[1]))
-            csv_file.writerow([time, 0, i1, i2, c.states[0], c.states[1], 0])
+            csv_file.writerow([time, 'Normal', i1, i2, c.states[0],
+                               c.states[1], -1])
 
             # Calculation for non dimentional
             if i1 != i1_temp or i2 != i2_temp or c1_stable is False:
@@ -115,8 +116,9 @@ if __name__ == "__main__":
 
             out1_1.append((time, c1.states[0]))
             out2_1.append((time, c1.states[1]))
-            csv_file.writerow([time, 0, i1, i2, c1.states[0], c1.states[1],
-                               0 if c1_stable is True else 1])
+            csv_file.writerow([time, 'Non-dimensional', i1, i2, c1.states[0],
+                               c1.states[1],
+                               1 if c1_stable is True else 0])
 
             # Calculation for dimentional
             if i1 != i1_temp or i2 != i2_temp or c2_stable is False:
@@ -131,8 +133,9 @@ if __name__ == "__main__":
 
             out1_2.append((time, c2.states[0]))
             out2_2.append((time, c2.states[1]))
-            csv_file.writerow([time, 0, i1, i2, c2.states[0], c2.states[1],
-                               0 if c2_stable is True else 1])
+            csv_file.writerow([time, 'Dimensional', i1, i2, c2.states[0],
+                               c2.states[1],
+                               1 if c2_stable is True else 0])
 
             i1_temp = i1
             i2_temp = i2
