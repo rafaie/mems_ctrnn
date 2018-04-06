@@ -23,6 +23,7 @@ __license__ = "APLv2"
 LINE = 1
 CIRCLE = 2
 STEP_SIZE = 0.1
+MEM_STEP_SIZE = 1
 MODEL_SIZE = 14
 MAX_DISTANCE = 100.0
 
@@ -50,7 +51,12 @@ def create_agent(genom, show_details=False):
     if len(genom) - 1 != n + 2*7 + 4:
         raise NameError('There is an Error in training configuration!!')
 
-    agent = VisualAgent(MODEL_SIZE, agent_vel_x=agent_vel_x)
+    agent = VisualAgent(MODEL_SIZE, agent_vel_x=agent_vel_x,
+                        stability_acc=stability_acc,
+                        stability_hist_bucket=stability_hist_bucket,
+                        stability_min_iteration=stability_min_iteration,
+                        stability_max_iteration=stability_max_iteration)
+
     nervous_system = agent.nervous_system
     nervous_system.set_circuit_size(MODEL_SIZE)
     nervous_system.hs = [0]*7 + genom[0:mid_neurons_count] + [0] * 2
@@ -80,7 +86,7 @@ def create_agent(genom, show_details=False):
     nervous_system.mem_K = float(MEMS_info['K'])
     nervous_system.mem_ythr = float(MEMS_info['ythr'])
     nervous_system.mem_state_stopper = float(MEMS_info['state_stopper'])
-    nervous_system.step_size = STEP_SIZE
+    nervous_system.step_size = MEM_STEP_SIZE
     nervous_system.calc_params()
 
     if show_details is True:
@@ -198,6 +204,8 @@ def load_config(path):
     global cuncurrency, saved_model_count, MEMS_info, mid_neurons_count
     global MODEL_SIZE, population_np_path, reload_np_population_rate
     global agent_vel_x, obj_vel_y
+    global stability_acc, stability_hist_bucket, stability_min_iteration
+    global stability_max_iteration
 
     with open(path, 'r') as fi:
         yaml_data = yaml.load(fi)
@@ -226,6 +234,11 @@ def load_config(path):
 
         agent_vel_x = float(training_conf['agent_vel_x'])
         obj_vel_y = float(training_conf['obj_vel_y'])
+
+        stability_acc = float(training_conf['stability_acc'])
+        stability_hist_bucket = int(training_conf['stability_hist_bucket'])
+        stability_min_iteration = int(training_conf['stability_min_iteration'])
+        stability_max_iteration = int(training_conf['stability_max_iteration'])
 
 
 def do_training():

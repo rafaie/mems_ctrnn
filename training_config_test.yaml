@@ -22,7 +22,13 @@ Training:
   crossover_type : 1                     #GeneticAlgorithm.TWO_POINT_CROSSOVER
   fitness_goal : 0.97
   STEP_SIZE : 0.1
+  MEM_STEP_SIZE : 1
   cuncurrency : 5
   log_enable : true
   saved_model_count: 10
   mid_neurons_count: 5
+  stability_acc : 0.001
+  stability_hist_bucket: 3
+  stability_min_iteration: 9
+  stability_max_iteration: 150
+  use_dim_equation : False

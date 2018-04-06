@@ -13,14 +13,30 @@ class VisualAgent:
     VISUAL_ANGLE = math.pi/6
     VEL_GAIN = 5
 
-    def __init__(self, ix=0.0, iy=0.0, num_rays_=7, agent_vel_x=None):
+    def __init__(self, ix=0.0, iy=0.0, num_rays_=7, agent_vel_x=None,
+                 stability_acc=0.001,
+                 stability_hist_bucket=3,
+                 stability_min_iteration=7,
+                 stability_max_iteration=150):
+
         self.cx = 0
         self.cy = 0
         self.vx = 0
 
+        self.stability_acc = stability_acc,
+        self.stability_hist_bucket = stability_hist_bucket,
+        self.stability_min_iteration = stability_min_iteration
+        self.stability_max_iteration = stability_max_iteration
+
         self.num_rays = num_rays_
         self.rays = [Ray() for i in range(self.num_rays)]
-        self.nervous_system = VAgent_MEMS_CTRNN()
+
+        v = VAgent_MEMS_CTRNN(stability_acc=stability_acc,
+                              stability_hist_bucket=stability_hist_bucket,
+                              stability_min_iteration=stability_min_iteration,
+                              stability_max_iteration=stability_max_iteration)
+        self.nervous_system = v
+
         self.reset(ix, iy)
 
         if agent_vel_x is not None:
@@ -58,7 +74,7 @@ class VisualAgent:
             self.nervous_system.set_neuron_external_input(i, external_input)
 
         # Step nervous system
-        self.nervous_system.euler_step(step_size)
+        self.nervous_system.euler_step()
 
         # Update agent state
         self.vx = VisualAgent.VEL_GAIN * (self.nervous_system.outputs[0] -
