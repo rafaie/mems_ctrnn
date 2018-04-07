@@ -47,8 +47,7 @@ def load_dataset():
 def create_agent(genom, show_details=False):
     genom = list(genom)
 
-    n = MODEL_SIZE * MODEL_SIZE + mid_neurons_count + MODEL_SIZE
-    if len(genom) - 1 != n + 2*7 + 4:
+    if len(genom) - 1 != MODEL_SIZE * (MODEL_SIZE + 4) + 4:
         raise NameError('There is an Error in training configuration!!')
 
     agent = VisualAgent(MODEL_SIZE, agent_vel_x=agent_vel_x,
@@ -59,20 +58,22 @@ def create_agent(genom, show_details=False):
 
     nervous_system = agent.nervous_system
     nervous_system.set_circuit_size(MODEL_SIZE)
-    nervous_system.hs = [0]*7 + genom[0:mid_neurons_count] + [0] * 2
-    nervous_system.v_biases = genom[mid_neurons_count: mid_neurons_count
-                                    + MODEL_SIZE]
 
     for i in range(MODEL_SIZE):
+        nervous_system.hs[i] = genom[i * (MODEL_SIZE + 4)]
+        nervous_system.v_biases[i] = genom[i * (MODEL_SIZE + 4) + 1]
         for j in range(MODEL_SIZE):
-            v = genom[mid_neurons_count + MODEL_SIZE + i * MODEL_SIZE + j]
+            v = genom[i * (MODEL_SIZE + 4) + j + 2]
             nervous_system.set_connection_weight(i, j, v)
 
-    nervous_system.inp_alpha = genom[n: n + 7]
-    nervous_system.inp_beta = genom[n + 7: n + 2*7]
+        if i < 7:
+            c = (MODEL_SIZE + 4) * i + MODEL_SIZE + 2
+            nervous_system.inp_alpha[i] = genom[c]
+            nervous_system.inp_beta[i] = genom[c+1]
 
-    nervous_system.out_alpha = genom[n + 2*7: n + 2*7 + 2]
-    nervous_system.out_beta = genom[n + 2*7 + 2: n + 2*7 + 4]
+    c = MODEL_SIZE * (MODEL_SIZE + 4)
+    nervous_system.out_alpha = [genom[c], genom[c + 2]]
+    nervous_system.out_beta = [genom[c + 1], genom[c + 3]]
 
     nervous_system.mem_L = float(MEMS_info['L'])
     nervous_system.mem_b = float(MEMS_info['b'])
