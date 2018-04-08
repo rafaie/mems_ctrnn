@@ -16,19 +16,19 @@ MEMS:
 Training:
   genom_struct_path : genom_struct_5n_mo.csv
   init_population_size : 2000
-  population_size : 20
-  mutation_rate : 0.20
-  num_iteratitions : 100
+  population_size : 100
+  mutation_rate : 0.28
+  num_iteratitions : 40
   crossover_type : 1                     #GeneticAlgorithm.TWO_POINT_CROSSOVER
   fitness_goal : 0.97
   STEP_SIZE : 0.1
   MEM_STEP_SIZE : 1
   cuncurrency : 20
   log_enable : true
-  saved_model_count: 15
+  saved_model_count: 20
   mid_neurons_count: 5
   population_np_path: models/population_5n_mo.npy
-  reload_np_population_rate: 0.05
+  reload_np_population_rate: 0.1
   agent_vel_x: 5
   obj_vel_y: -3
   stability_acc : 0.001
