@@ -177,10 +177,18 @@ def calc_fitness(genom):
         fitness.append(f)
         data2.append(data + o)
 
+    mn = np.mean(fitness)
+    md = np.median(fitness)
+
     logger.info('data2 = {} '.format(data2))
-    logger.info('mean = {} and median = {} => {}'.format(np.mean(fitness),
-                np.median(fitness), fitness))
-    return np.mean(fitness)
+    logger.info('mean = {} and median = {} => {} | '.format(mn, md, fitness) +
+                'inp_alpha={}'.format(agent.nervous_system.inp_alpha) + '|' +
+                'out_alpha={}'.format(agent.nervous_system.out_alpha) + '|' +
+                'v_biases={}'.format(agent.nervous_system.v_biases))
+    if mn == 0.5 and md == 0.5:
+        logger.info('The mean {} is chaneged to zero'.format(mn))
+        return 0.0
+    return mn
 
 
 # Save the best 10 models!
