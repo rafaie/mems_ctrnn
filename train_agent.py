@@ -272,7 +272,12 @@ def do_training():
 
 def calc_fitness_for_model(model_path):
     fitness = []
-    agent = VisualAgent(MODEL_SIZE, agent_vel_x=agent_vel_x)
+    agent = VisualAgent(MODEL_SIZE, agent_vel_x=agent_vel_x,
+                        stability_acc=stability_acc,
+                        stability_hist_bucket=stability_hist_bucket,
+                        stability_min_iteration=stability_min_iteration,
+                        stability_max_iteration=stability_max_iteration)
+
     agent.nervous_system.load(model_path)
     agent.nervous_system.print_model_abstract()
     agent.nervous_system.print_model()
