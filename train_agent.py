@@ -134,7 +134,8 @@ def run_process(data, agent, show_details=False, outfile_csv=None):
         if outfile_csv is not None:
             outfile_csv.writerow([obj_id, timer, STEP_SIZE, x1, y1, x2, y2,
                                   agent.positionX(), agent.positionY(),
-                                  obj.positionX(), obj.positionY(), status])
+                                  obj.positionX(), obj.positionY(), status] +
+                                 list(agent.nervous_system.states))
             status = 1
         agent.step(STEP_SIZE, obj, show_details=show_details)
         obj.step(STEP_SIZE)
@@ -159,7 +160,8 @@ def run_process(data, agent, show_details=False, outfile_csv=None):
     if outfile_csv is not None:
         outfile_csv.writerow([obj_id, timer, STEP_SIZE, x1, y1, x2, y2,
                               agent.positionX(), agent.positionY(),
-                              obj.positionX(), obj.positionY(), status])
+                              obj.positionX(), obj.positionY(), status] +
+                             list(agent.nervous_system.states))
 
     return [agent.positionX(), agent.positionY(), obj.positionX(),
             obj.positionY(), dist, dist2, f]
@@ -280,7 +282,6 @@ def calc_fitness_for_model(model_path):
 
     agent.nervous_system.load(model_path)
     agent.nervous_system.print_model_abstract()
-    agent.nervous_system.print_model()
 
     data2 = []
 
@@ -289,13 +290,16 @@ def calc_fitness_for_model(model_path):
                                  quotechar="'", quoting=csv.QUOTE_MINIMAL)
         outfile_csv.writerow(['obj_type', 'timer', 'step_size', 'X1', 'Y1',
                               'X2', 'Y2', 'agent_X', 'agent_Y', 'obj_X',
-                              'obj_Y', 'status'])
+                              'obj_Y', 'status'] + ['Neuron ' + str(i) for i in
+                                                    range(1, MODEL_SIZE + 1)])
 
         for data in dataset:
             o = run_process(data, agent, outfile_csv=outfile_csv)
             f = o[-1]
             fitness.append(f)
             data2.append(data + o)
+
+    agent.nervous_system.print_model()
 
     logger.info('data2 = {} '.format(data2))
     logger.info('=> {}'.format(fitness))
