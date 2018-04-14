@@ -134,16 +134,26 @@ class MEMS_CTRNN:
         self.external_inputs[i] = value
 
     # Integrate a circuit one step using 4th-order Runge-Kutta.
-    def euler_step(self, step_size=None, use_dim_equation=False):
+    def euler_step(self, step_size=None, use_dim_equation=False,
+                   use_defelection_feedback=False):
         if step_size is not None:
             self.step_size = step_size
 
         # Calculate the v_0
-        for i in range(self.size):
-            if self.states[i] < self.mem_ythr:
-                self.v_outs[i] = self.external_inputs[i] + self.v_biases[i]
-            else:
-                self.v_outs[i] = 0
+        if use_defelection_feedback is True:
+            for i in range(self.size):
+                aa = -1 / (self.mem_g0 + self.hs[i])
+                bb = self.hs[i] / (self.mem_g0 + self.hs[i])
+
+                self.v_outs[i] = (self.external_inputs[i] + self.v_biases[i]) \
+                    * (aa * self.mem_g0 * self.states[i] + bb)
+
+        else:
+            for i in range(self.size):
+                if self.states[i] < self.mem_ythr:
+                    self.v_outs[i] = self.external_inputs[i] + self.v_biases[i]
+                else:
+                    self.v_outs[i] = 0
 
         # Update the state of all neurons.
         for i in range(self.size):
