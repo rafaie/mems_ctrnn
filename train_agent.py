@@ -137,7 +137,9 @@ def run_process(data, agent, show_details=False, outfile_csv=None):
                                   obj.positionX(), obj.positionY(), status] +
                                  list(agent.nervous_system.states))
             status = 1
-        agent.step(STEP_SIZE, obj, show_details=show_details)
+        agent.step(STEP_SIZE, obj, mem_step_size=MEM_STEP_SIZE,
+                   show_details=show_details,
+                   use_defelection_feedback=use_defelection_feedback)
         obj.step(STEP_SIZE)
         if show_details is True:
             agent.nervous_system.print_model_abstract()
@@ -216,7 +218,7 @@ def load_config(path):
     global MODEL_SIZE, population_np_path, reload_np_population_rate
     global agent_vel_x, obj_vel_y
     global stability_acc, stability_hist_bucket, stability_min_iteration
-    global stability_max_iteration
+    global stability_max_iteration, use_defelection_feedback
 
     with open(path, 'r') as fi:
         yaml_data = yaml.load(fi)
@@ -250,6 +252,7 @@ def load_config(path):
         stability_hist_bucket = int(training_conf['stability_hist_bucket'])
         stability_min_iteration = int(training_conf['stability_min_iteration'])
         stability_max_iteration = int(training_conf['stability_max_iteration'])
+        use_defelection_feedback = training_conf['use_defelection_feedback']
 
 
 def do_training():

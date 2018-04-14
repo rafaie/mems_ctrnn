@@ -38,7 +38,7 @@ if __name__ == "__main__":
             i1, i2 = gen_input(time)
             c.set_neuron_external_input(0, i1)
             c.set_neuron_external_input(1, i2)
-            c.euler_step(step_size)
+            c.euler_step(step_size, use_defelection_feedback=False)
 
             in1.append((time, i1))
             in2.append((time, i2))

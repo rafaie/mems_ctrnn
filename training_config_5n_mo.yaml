@@ -36,3 +36,4 @@ Training:
   stability_min_iteration: 8
   stability_max_iteration: 40
   use_dim_equation : False
+  use_defelection_feedback: false
