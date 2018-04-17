@@ -15,7 +15,7 @@ MEMS:
 
 Training:
   genom_struct_path : genom_struct_5n_mo.csv
-  init_population_size : 10000
+  init_population_size : 5000
   population_size : 100
   mutation_rate : 0.28
   num_iteratitions : 100
@@ -28,7 +28,7 @@ Training:
   saved_model_count: 20
   mid_neurons_count: 5
   population_np_path: models/population_5n_mo.npy
-  reload_np_population_rate: 0.1
+  reload_np_population_rate: 0.05
   agent_vel_x: 5
   obj_vel_y: -3
   stability_acc : 0.01
