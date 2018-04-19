@@ -47,7 +47,9 @@ class VAgent_MEMS_CTRNN(MEMS_CTRNN):
 
     def euler_step_with_stability(self, step_size=None, use_dim_equation=False,
                                   save_detail=False,
-                                  use_defelection_feedback=False):
+                                  use_defelection_feedback=False,
+                                  return_states_info=False):
+        states_info = []
 
         if save_detail is True:
             outfile = open('duration_analysis.csv', 'a')
@@ -72,6 +74,9 @@ class VAgent_MEMS_CTRNN(MEMS_CTRNN):
                                       a[(i - l) % l] - b[(i - l) % l], '-',
                                       a, b])
 
+            if return_states_info is True:
+                states_info.append(list(self.states))
+
             if i >= self.stability_min_iteration and \
                abs(a[(i - l) % l] - self.states[-2]) < self.stability_acc and \
                abs(b[(i - l) % l] - self.states[-1]) < self.stability_acc:
@@ -87,19 +92,27 @@ class VAgent_MEMS_CTRNN(MEMS_CTRNN):
         if save_detail is True:
             outfile.close()
 
+        return states_info
+
     # Integrate a circuit one step using 4th-order Runge-Kutta.
     def euler_step(self, step_size=None, use_dim_equation=False,
-                   save_detail=False, use_defelection_feedback=False):
+                   save_detail=False, use_defelection_feedback=False,
+                   return_states_info=False):
         for i in range(7):
             self.external_inputs[i] = self.external_inputs[i] * \
                  self.inp_alpha[i] + self.inp_beta[i]
 
-        self.euler_step_with_stability(step_size, use_dim_equation,
-                                       save_detail, use_defelection_feedback)
+        state_info = self.euler_step_with_stability(step_size,
+                                                    use_dim_equation,
+                                                    save_detail,
+                                                    use_defelection_feedback,
+                                                    return_states_info)
 
         for i in range(2):
             self.outputs[i] = self.states[self.size - 2 + i] * \
                 self.out_alpha[i] + self.out_beta[i]
+
+        return state_info
 
     # Input and output from file
     def load(self, path):

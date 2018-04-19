@@ -60,7 +60,8 @@ class VisualAgent:
         self.reset_rays()
 
     def step(self, step_size, object, mem_step_size=1, show_details=False,
-             use_defelection_feedback=False):
+             use_defelection_feedback=False,
+             return_states_info=False):
         self.reset_rays()
         for i in range(self.num_rays):
             object.ray_intersection(self.rays[i])
@@ -75,9 +76,11 @@ class VisualAgent:
             self.nervous_system.set_neuron_external_input(i, external_input)
 
         # Step nervous system
-        self.nervous_system.euler_step(step_size=mem_step_size,
-                                       use_defelection_feedback=
-                                       use_defelection_feedback)
+        st = self.nervous_system.euler_step(step_size=mem_step_size,
+                                            use_defelection_feedback=
+                                            use_defelection_feedback,
+                                            return_states_info=
+                                            return_states_info)
 
         # Update agent state
         self.vx = VisualAgent.VEL_GAIN * (self.nervous_system.outputs[0] -
@@ -89,6 +92,8 @@ class VisualAgent:
             self.cx = -VisualAgent.ENV_WIDTH/2
         elif self.cx > VisualAgent.ENV_WIDTH/2:
             self.cx = VisualAgent.ENV_WIDTH/2
+
+        return st
 
     def reset_ray(self, ray, theta, cx, cy):
         if abs(theta) < 0.0000001:

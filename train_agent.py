@@ -123,6 +123,10 @@ def run_process(data, agent, show_details=False, outfile_csv=None):
     if show_details is True:
         agent.nervous_system.print_model_abstract()
 
+    return_states_info = False
+    if outfile_csv is not None:
+        return_states_info = True
+
     while obj.positionY() > VisualAgent.BODY_SIZE/2:
         t += STEP_SIZE
         timer += 1
@@ -131,15 +135,23 @@ def run_process(data, agent, show_details=False, outfile_csv=None):
             print(agent.positionX(), agent.positionY())
             print(obj.positionX(), obj.positionY())
 
-        if outfile_csv is not None:
-            outfile_csv.writerow([obj_id, timer, STEP_SIZE, x1, y1, x2, y2,
-                                  agent.positionX(), agent.positionY(),
-                                  obj.positionX(), obj.positionY(), status] +
-                                 list(agent.nervous_system.states))
             status = 1
-        agent.step(STEP_SIZE, obj, mem_step_size=MEM_STEP_SIZE,
-                   show_details=show_details,
-                   use_defelection_feedback=use_defelection_feedback)
+        st = agent.step(STEP_SIZE, obj, mem_step_size=MEM_STEP_SIZE,
+                        show_details=show_details,
+                        use_defelection_feedback=use_defelection_feedback,
+                        return_states_info=return_states_info)
+
+        if outfile_csv is not None:
+            tiny_step = 0.0001
+            t = timer
+            status = 1
+            for s in st:
+                t += tiny_step
+                outfile_csv.writerow([obj_id, t, STEP_SIZE, x1, y1, x2, y2,
+                                      agent.positionX(), agent.positionY(),
+                                      obj.positionX(), obj.positionY(),
+                                      status] + s)
+
         obj.step(STEP_SIZE)
         if show_details is True:
             agent.nervous_system.print_model_abstract()
