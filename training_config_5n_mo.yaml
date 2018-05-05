@@ -34,6 +34,6 @@ Training:
   stability_acc : 0.01
   stability_hist_bucket: 3
   stability_min_iteration: 8
-  stability_max_iteration: 40
+  stability_max_iteration: 400
   use_dim_equation : False
   use_defelection_feedback: true

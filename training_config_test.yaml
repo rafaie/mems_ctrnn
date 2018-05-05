@@ -14,12 +14,12 @@ MEMS:
   state_stopper : 0.95
 
 Training:
-  genom_struct_path : genom_struct_5n.csv
-  init_population_size : 20
+  genom_struct_path : genom_struct_5n_mo.csv
+  init_population_size : 15
   population_size : 10
   mutation_rate : 0.20
   num_iteratitions : 2
-  crossover_type : 1                     #GeneticAlgorithm.TWO_POINT_CROSSOVER
+  crossover_type : 1
   fitness_goal : 0.97
   STEP_SIZE : 0.1
   MEM_STEP_SIZE : 1
@@ -27,7 +27,7 @@ Training:
   log_enable : true
   saved_model_count: 10
   mid_neurons_count: 5
-  population_np_path: models/population_5n.npy
+  population_np_path: models/population_5n_mo.npy
   reload_np_population_rate: 0.05
   agent_vel_x: 5
   obj_vel_y: -3

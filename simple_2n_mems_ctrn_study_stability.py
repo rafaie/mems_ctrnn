@@ -15,10 +15,10 @@ def gen_input(t):
 
 
 def calculate_with_stablizing(c, a, b, l, i, i1, i2,
-                              step_size, normalized):
+                              step_size, use_dim_equation):
     c.set_neuron_external_input(0, i1)
     c.set_neuron_external_input(1, i2)
-    c.euler_step(step_size, normalized=normalized)
+    c.euler_step(step_size, use_dim_equation=use_dim_equation)
 
     # print(abs(a[(i - l) % l] - c.states[-2]),
     #       abs(b[(i - l) % l] - c.states[-1]),
@@ -27,7 +27,7 @@ def calculate_with_stablizing(c, a, b, l, i, i1, i2,
     if i >= l and \
        abs(a[(i - l) % l] - c.states[-2]) < max_variation and \
        abs(b[(i - l) % l] - c.states[-1]) < max_variation:
-        t = 'nondimensional' if normalized is False else 'dimensional'
+        t = 'nondimensional' if use_dim_equation is False else 'dimensional'
         print('The MEMCTRN {} is stablized in iteration {} for '.format(t, i) +
               'input1 = {}, input2 = {} and max_variation= {}'.
               format(i1, i2, max_variation))
@@ -161,15 +161,15 @@ if __name__ == "__main__":
         plt.legend()
         plt.subplot(413)
         plt.plot(out1_1_np[:, 0], out1_1_np[:, 1], "r-",
-                 label='Output 1 - Non dim')
+                 label='Output 1 - Non dim-St')
         plt.plot(out2_1_np[:, 0], out2_1_np[:, 1], "b-",
-                 label='Output 2 - Non dim')
+                 label='Output 2 - Non dim-St')
         plt.legend()
         plt.subplot(414)
         plt.plot(out1_2_np[:, 0], out1_2_np[:, 1], "r-",
-                 label='Output 1 - dim')
+                 label='Output 1 - dim-St')
         plt.plot(out2_2_np[:, 0], out2_2_np[:, 1], "b-",
-                 label='Output 2 - dim')
+                 label='Output 2 - dim-St')
         plt.legend()
 
     plt.show()
