@@ -1,0 +1,70 @@
+\documentclass{article}
+\usepackage[margin=1.2in]{geometry}
+\begin{document}
+<< set-options, echo=FALSE,  cache=FALSE>>=
+@
+
+\section{Visualize the agent movement to catch circle}
+
+<<echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.asp=1.3>>=
+library(data.table)
+library(dplyr)
+library(ggplot2)
+library(xtable)
+library(comf)
+library(weathermetrics)
+library(lubridate)
+library(gridExtra)
+
+base_data=read.csv('../output_sum.csv')
+base_data$obj_type_name <- sapply(base_data$obj_type, function(X) if (X==1) 'Line' else 'Circle')
+base_data$timer = base_data$timer*0.1
+
+vars <- unique(base_data[, c(4:7)])
+for (i in c(1:nrow(vars)) ){
+  #i <- 1
+  opt <- vars[i,]
+  data_3 = base_data[base_data$X1 == opt$X1 & base_data$Y1==opt$Y1 &
+                     base_data$X2 == opt$X2 & base_data$Y2==opt$Y2 &
+                     base_data$obj_type == 2 , ] 
+                     #base_data$step_size == opt$step_size 
+
+  data_3_1 = melt(data_3[,c(2,3, 14:ncol(base_data)-1)], id=c(1,2))
+  g1<-
+    ggplot(data_3_1, aes(timer, value)) +
+         geom_line() + labs(title=paste("Agent move from (",
+                                        data_3$X1[1], ",", data_3$Y1[1],
+                                        ") to catch the Circle object falling from (", 
+                                        data_3$X2[1], ",", data_3$Y2[2], ")",
+                                        sep = ''))+ xlab('Time (S)') + ylab('Value (V)') +
+        theme(legend.position="None") + 
+    facet_grid(variable~step_size) + theme_light(base_size = 8) + 
+    theme(plot.title = element_text(hjust = 0.5))
+  print(g1)
+}
+@
+
+\section{Visualize the agent movement to avoid Line object}
+<<echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.asp=1.3>>=
+for (i in c(1:nrow(vars)) ){
+  #i <- 1
+  opt <- vars[i,]
+  data_3 = base_data[base_data$X1 == opt$X1 & base_data$Y1==opt$Y1 &
+                     base_data$X2 == opt$X2 & base_data$Y2==opt$Y2 &
+                     base_data$obj_type == 1 , ] 
+                     #base_data$step_size == opt$step_size 
+
+  data_3_1 = melt(data_3[,c(2,3, 14:ncol(base_data)-1)], id=c(1,2))
+  g1<-ggplot(data_3_1, aes(timer, value)) +
+         geom_line() + labs(title=paste("Agent move from (",
+                                        data_3$X1[1], ",", data_3$Y1[1],
+                                        ") to avoid the Line object falling from (", 
+                                        data_3$X2[1], ",", data_3$Y2[2], ")",
+                                        sep = ''))+ xlab('Time (S)') + ylab('Value (V)') +
+        theme(legend.position="None") + 
+    facet_grid(variable~step_size) + theme_light(base_size = 8) + 
+    theme(plot.title = element_text(hjust = 0.5))
+  print(g1)
+}
+@
+\end{document}

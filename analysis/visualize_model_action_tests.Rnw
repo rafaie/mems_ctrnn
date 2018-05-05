@@ -1,0 +1,94 @@
+\documentclass{article}
+\usepackage[margin=1.2in]{geometry}
+\begin{document}
+<< set-options, echo=FALSE,  cache=FALSE>>=
+
+@
+\section{Visualize the agent movement for different scenarios}
+
+<<echo=FALSE, message=FALSE, warning=FALSE, fig.width=11, fig.asp=0.6>>=
+library(data.table)
+library(dplyr)
+library(ggplot2)
+library(xtable)
+library(comf)
+library(weathermetrics)
+library(lubridate)
+library(gridExtra)
+
+base_data=read.csv('../output.csv')
+base_data$obj_type_name <- sapply(base_data$obj_type, function(X) if (X==1) 'Line' else 'Circle')
+
+#par(mfrow=c(2,1))
+#data_1 = base_data[base_data$X2 == 30 & base_data$Y2==150
+#                  &  base_data$X1 == 0 & base_data$obj_type == 1, ]
+#a1 <- ggplot(data_1, aes(timer, agent_X)) +
+#         geom_line() + labs(title=paste("Vote/PMV Chart for day ", sep = ' ')) +
+#        theme(legend.position='none')
+
+#data_2 = base_data[base_data$X2 == 30 & base_data$Y2==150 
+#                  &  base_data$X1 < 0 & base_data$obj_type == 2, ]
+#a2 <- ggplot(data_2, aes(timer, agent_X)) +
+#         geom_line() + labs(title=paste("Vote/PMV Chart for day ", sep = ' '))+
+#        theme(legend.position='none')
+
+#grid.arrange(a1, a2, nrow = 1)
+
+
+
+
+@
+
+
+\section{Analysis Goal Planning Enrichment!}
+<<echo=FALSE, message=FALSE, warning=FALSE, fig.width=11, fig.asp=0.6>>=
+
+final_data <- base_data[base_data$status==2 ,]
+final_data$diff_val <- abs(final_data$agent_X - final_data$obj_X)
+#final_data$diff_val2 <- sqrt((final_data$agent_X - final_data$obj_X)^2 + (final_data$agent_Y - final_data$obj_Y)^2)
+final_data$diff_val2 <- abs(final_data$agent_X - final_data$obj_X)
+final_data$valid <- sapply(final_data$diff_val2, function(X) if (X < 30+0.15) 'Catch' else 'Avoid')
+
+ggplot(final_data, aes(as.character(X1), diff_val2 , color=valid)) + geom_point() + #geom_boxplot(width=0.1)+
+  #stat_summary(fun.y=median, geom="point", size=2, color=valid) +
+  facet_grid(obj_type_name ~X2 ) + labs(title=paste("diff_val2 = dist(agent, obj) in final Step, X1=Agent Start X, X2= Obj Start X (All the charts partitioned by X2)"))
+
+ggplot(final_data, aes(as.character(X2), diff_val2 , color=valid)) + geom_point() +
+  facet_grid(obj_type_name ~.)
+
+ggplot(final_data, aes(X2, X1 , color=valid)) + geom_point() +
+  facet_grid(obj_type_name ~.)
+
+final_data$val = 1
+@
+
+<<echo=FALSE, message=FALSE, warning=FALSE, fig.width=4, fig.asp=0.9>>=
+final_sum <- final_data %>%
+        group_by(obj_type_name, valid) %>%
+        summarise(val =n())
+
+final_sum$percentage <- paste(round(100 * final_sum$val/nrow(final_data), 2) , "%", sep="")
+ggplot(final_sum, aes(factor(obj_type_name), val, fill = valid)) +
+          geom_bar(stat = "identity") +
+          geom_text(aes(label = percentage, y = nrow(final_data)/2 - val /2 ),  color = "black") + theme_light()+
+  #scale_fill_manual(values = c("red", "steelblue"), guide = FALSE)
+  #scale_fill_brewer(palette='Dark2') +
+  xlab('Object Type')+ ylab('Scenario count')+
+  guides(fill=guide_legend(title="Outcome"))
+
+
+ggplot(final_data,aes(x = X1,y=X2, color = valid)) +
+  geom_point() +
+  #scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9"))+
+   xlab('X Position of Object')+ ylab('X Position of Agent')+
+  guides(fill=guide_legend(title="Outcome"))+
+facet_grid(obj_type_name ~.) + theme_light() + theme(legend.position='none')
+
+
+
+@
+
+
+
+
+\end{document}
