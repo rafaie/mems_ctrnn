@@ -54,7 +54,8 @@ def create_agent(genom, show_details=False):
                         stability_acc=stability_acc,
                         stability_hist_bucket=stability_hist_bucket,
                         stability_min_iteration=stability_min_iteration,
-                        stability_max_iteration=stability_max_iteration)
+                        stability_max_iteration=stability_max_iteration,
+                        is_type_acc=is_type_acc)
 
     nervous_system = agent.nervous_system
     nervous_system.set_circuit_size(MODEL_SIZE)
@@ -230,7 +231,7 @@ def load_config(path):
     global MODEL_SIZE, population_np_path, reload_np_population_rate
     global agent_vel_x, obj_vel_y
     global stability_acc, stability_hist_bucket, stability_min_iteration
-    global stability_max_iteration, use_defelection_feedback
+    global stability_max_iteration, use_defelection_feedback, is_type_acc
 
     with open(path, 'r') as fi:
         yaml_data = yaml.load(fi)
@@ -266,6 +267,10 @@ def load_config(path):
         stability_max_iteration = int(training_conf['stability_max_iteration'])
         use_defelection_feedback = training_conf['use_defelection_feedback']
 
+        is_type_acc = False
+        if training_conf.get('is_type_acc') is not None:
+            is_type_acc = True
+
 
 def do_training():
     print (genom_struct_path, MEMS_info, cuncurrency)
@@ -293,7 +298,8 @@ def calc_fitness_for_model(model_path):
                         stability_acc=stability_acc,
                         stability_hist_bucket=stability_hist_bucket,
                         stability_min_iteration=stability_min_iteration,
-                        stability_max_iteration=stability_max_iteration)
+                        stability_max_iteration=stability_max_iteration,
+                        is_type_acc=is_type_acc)
 
     agent.nervous_system.load(model_path)
     agent.nervous_system.print_model_abstract()

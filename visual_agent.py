@@ -1,4 +1,5 @@
 from vagent_mems_ctrnn import VAgent_MEMS_CTRNN
+from vagent_mems_ctrnn_acc import VAgent_MEMS_CTRNN_ACC
 from visual_object import Ray
 import math
 
@@ -17,7 +18,8 @@ class VisualAgent:
                  stability_acc=0.001,
                  stability_hist_bucket=3,
                  stability_min_iteration=7,
-                 stability_max_iteration=150):
+                 stability_max_iteration=150,
+                 is_type_acc=False):
 
         self.cx = 0
         self.cy = 0
@@ -35,6 +37,12 @@ class VisualAgent:
                               stability_hist_bucket=stability_hist_bucket,
                               stability_min_iteration=stability_min_iteration,
                               stability_max_iteration=stability_max_iteration)
+        if is_type_acc is True:
+            v = VAgent_MEMS_CTRNN_ACC(stability_acc=stability_acc,
+                            stability_hist_bucket=stability_hist_bucket,
+                            stability_min_iteration=stability_min_iteration,
+                            stability_max_iteration=stability_max_iteration)
+
         self.nervous_system = v
 
         self.reset(ix, iy)
