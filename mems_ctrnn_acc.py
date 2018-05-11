@@ -180,8 +180,8 @@ class MEMS_CTRNN_ACC:
 
             self.states[i] += self.step_size * self.states2[i]
 
-        print(self.states, self.states1, self.v_outs, self.external_inputs,
-              step_size)
+        # print(self.states, self.states1, self.v_outs, self.external_inputs,
+        #       step_size)
 
     # Input and output from file
     def load(self, path):
