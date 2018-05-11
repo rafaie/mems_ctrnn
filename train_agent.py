@@ -329,6 +329,7 @@ def calc_fitness_for_model(model_path):
 
 
 if __name__ == "__main__":
+    print('It''s the code to train agent!')
     config_path = ''
     if len(sys.argv) > 1:
         config_path = sys.argv[1]
